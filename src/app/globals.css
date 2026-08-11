@@ -1,0 +1,436 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── SólidaTech / KmZero Design Tokens ────────────────────── */
+:root {
+  /* Paleta principal — Dark Mode (Padrão Sólida Tech) */
+  --st-navy: #0F1F38;
+  /* fundo principal escuro */
+  --st-deep-blue: #1A3A6B;
+  /* containers */
+  --st-steel: #2B5BAA;
+  /* accent secundário */
+  --st-electric: #3B82F6;
+  /* CTAs, botões, destaques */
+  --st-ice: #C8DEFF;
+  /* ghost buttons, bordas */
+  --st-arctic: #F4F7FF;
+  /* texto principal */
+  --st-heading: #FFFFFF;
+  /* headings */
+  --st-muted: #8BA8C8;
+  /* texto secundário */
+
+  /* Semânticas */
+  --st-success: #10B981;
+  --st-warning: #F59E0B;
+  --st-danger: #EF4444;
+  --st-info: #06B6D4;
+
+  /* Card surface */
+  --st-surface: #162D52;
+  /* cards escuros */
+  --st-surface-2: #1E3A5F;
+  /* hover states */
+  --st-border: rgba(59, 130, 246, 0.15);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .4), 0 0 0 1px rgba(59, 130, 246, .08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .5), 0 0 0 1px rgba(59, 130, 246, .1);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, .25);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Spacing safe-area para iPhone */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* ─── Light Mode Theme (Contraste 100% Perfeito SólidaTech) ──────────────────── */
+html.light {
+  --st-navy: #F8FAFC;
+  /* Slate 50 */
+  --st-deep-blue: #E2E8F0;
+  /* Slate 200 */
+  --st-steel: #1D4ED8;
+  /* Blue 700 */
+  --st-electric: #2563EB;
+  /* Blue 600 */
+  --st-ice: #1E293B;
+  /* Slate 800 */
+  --st-arctic: #0F172A;
+  /* Slate 900 */
+  --st-heading: #0F172A;
+  /* Headings slate 900 */
+  --st-muted: #475569;
+  /* Slate 600 com contraste alto */
+
+  /* Semânticas legíveis no modo claro */
+  --st-success: #059669;
+  /* Emerald 600 */
+  --st-warning: #D97706;
+  /* Amber 600 */
+  --st-danger: #DC2626;
+  /* Red 600 */
+  --st-info: #0284C7;
+  /* Sky 600 */
+
+  --st-surface: #FFFFFF;
+  /* Cards brancos puros */
+  --st-surface-2: #F1F5F9;
+  /* Hover states / Slate 100 */
+  --st-border: #E2E8F0;
+  /* Slate 200 */
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .05), 0 1px 2px rgba(0, 0, 0, .03);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .06), 0 0 0 1px rgba(37, 99, 235, .1);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, .12);
+}
+
+/* Light Mode Base Overrides */
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #0F172A !important;
+}
+
+html.light .text-st-arctic,
+html.light [class*="text-st-arctic"] {
+  color: #0F172A !important;
+}
+
+html.light .text-st-muted,
+html.light [class*="text-st-muted"] {
+  color: #475569 !important;
+}
+
+/* Forçar fundos claros limpos para todos os cards e superfícies no modo claro */
+html.light .card,
+html.light .bg-st-surface,
+html.light [class*="bg-st-surface"],
+html.light [class*="bg-st-surface/"] {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .bg-st-surface-2,
+html.light [class*="bg-st-surface-2"],
+html.light [class*="bg-st-surface-2/"] {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html.light .bg-st-navy,
+html.light [class*="bg-st-navy"],
+html.light [class*="bg-st-navy/"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light aside {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light aside div,
+html.light aside nav {
+  border-color: #E2E8F0 !important;
+}
+
+html.light header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Botões sólidos com fundo azul/verde mantêm texto branco perfeito no modo claro */
+html.light button.bg-st-electric,
+html.light button.bg-st-steel,
+html.light button.bg-st-success,
+html.light button.bg-st-danger,
+html.light a.bg-st-electric,
+html.light a.bg-st-steel,
+html.light a.bg-st-success,
+html.light a.bg-st-danger,
+html.light .bg-st-electric,
+html.light .bg-st-steel,
+html.light .bg-st-success,
+html.light .bg-st-danger {
+  color: #FFFFFF !important;
+}
+
+/* Status Badges no Modo Claro */
+html.light .bg-st-electric\/15,
+html.light .bg-st-electric\/20 {
+  background-color: #DBEAFE !important;
+  color: #1D4ED8 !important;
+  border-color: #93C5FD !important;
+}
+
+html.light .bg-st-success\/15,
+html.light .bg-st-success\/20 {
+  background-color: #DCFCE7 !important;
+  color: #15803D !important;
+  border-color: #86EFAC !important;
+}
+
+html.light .bg-st-warning\/10,
+html.light .bg-st-warning\/15,
+html.light .bg-st-warning\/20 {
+  background-color: #FEF3C7 !important;
+  color: #B45309 !important;
+  border-color: #FDE047 !important;
+}
+
+html.light .bg-st-danger\/15,
+html.light .bg-st-danger\/20 {
+  background-color: #FEE2E2 !important;
+  color: #B91C1C !important;
+  border-color: #FCA5A5 !important;
+}
+
+/* Formulários no Modo Claro */
+html.light input,
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #64748B !important;
+}
+
+html.light select option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* ─── Trava Global de Linha Única (NUNCA Quebrar Texto em Botões e Badges) ─── */
+button,
+.btn,
+a[class*="button"],
+a[class*="btn"],
+span[class*="rounded-full"],
+span[class*="rounded-lg"],
+span[class*="badge"],
+div[class*="badge"],
+.badge {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* ─── Base ──────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--st-navy);
+  color: var(--st-arctic);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--st-navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--st-steel);
+  border-radius: 2px;
+}
+
+/* ─── Utilitários ───────────────────────────────────────────── */
+.glass {
+  background: var(--st-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--st-border);
+}
+
+.card {
+  background: var(--st-surface);
+  border: 1px solid var(--st-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--st-electric), var(--st-ice));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Safe area utilities para iOS PWA (iPhone Dynamic Island / Notch) */
+.pt-safe {
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+}
+
+.pt-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ─── Animações ─────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.3s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* ─── Forms ─────────────────────────────────────────────────── */
+input,
+select,
+textarea {
+  background: var(--st-navy);
+  border: 1px solid var(--st-border);
+  border-radius: var(--radius-sm);
+  color: var(--st-arctic);
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+input[type="date"] {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+  -webkit-appearance: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--st-electric);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--st-muted);
+}
+
+select option {
+  background: var(--st-surface);
+  color: var(--st-arctic);
+}
+
+html.light input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+/* ─── Sólida Tech Logo (Alternância Escuro / Claro) ──────────── */
+html:not(.light) .dark-logo-img {
+  display: block !important;
+}
+
+html:not(.light) .light-logo-img {
+  display: none !important;
+}
+
+html.light .dark-logo-img {
+  display: none !important;
+}
+
+html.light .light-logo-img {
+  display: block !important;
+}
