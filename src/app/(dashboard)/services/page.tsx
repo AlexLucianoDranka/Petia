@@ -46,55 +46,58 @@ export default function ServicesPage() {
         />
       </div>
 
-      {/* 1 Coluna por Serviço na Horizontal (100% Tela) */}
+      {/* Structured Single Column Layout per Service */}
       <div className="grid grid-cols-1 w-full space-y-3">
         {filtered.map((service) => (
           <div
             key={service.id}
-            className="card p-4 sm:p-5 rounded-2xl w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-st-border hover:border-st-electric/40 transition-all"
+            className="card p-4 sm:p-5 rounded-2xl w-full border border-st-border hover:border-st-electric/40 transition-all space-y-4"
           >
-            {/* Service Title & Category */}
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex items-center justify-center font-extrabold text-base shrink-0 shadow-glow">
-                <Briefcase className="w-6 h-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-extrabold text-st-arctic text-base truncate">{service.name}</h3>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 whitespace-nowrap">
-                    {service.category}
-                  </span>
+            {/* Header Line */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex items-center justify-center font-extrabold text-base shrink-0 shadow-glow">
+                  <Briefcase className="w-6 h-6" />
                 </div>
-                <p className="text-xs text-st-muted mt-0.5 truncate">Atendimento veterinário especializado</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-st-arctic text-base leading-tight">{service.name}</h3>
+                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 whitespace-nowrap">
+                      {service.category}
+                    </span>
+                  </div>
+                  <p className="text-xs text-st-muted mt-0.5 truncate">Atendimento veterinário especializado</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button className="px-3.5 py-1.5 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic text-xs font-semibold border border-st-border">
+                  Editar
+                </button>
+                <button className="px-4 py-1.5 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none">
+                  Agendar Serviço
+                </button>
               </div>
             </div>
 
-            {/* Internal Columns: Duration & Price */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs w-full lg:w-auto border-t lg:border-t-0 lg:border-l border-st-border/40 pt-3 lg:pt-0 lg:pl-4">
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Duração Estimada</span>
+            {/* Inner Structured Box (Dados Ancorados) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Duração Estimada</span>
                 <span className="font-semibold text-st-arctic flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-st-electric shrink-0" /> {service.duration_minutes} minutos
                 </span>
               </div>
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Preço Padrão</span>
+
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Preço Padrão</span>
                 <span className="font-extrabold text-st-electric text-base block">{formatCurrency(service.price)}</span>
               </div>
-              <div className="hidden sm:block">
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Comissão Técnica</span>
+
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Faixa de Comissão</span>
                 <span className="text-st-success font-bold block">15% a 30%</span>
               </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-st-border/20">
-              <button className="px-3.5 py-2 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic text-xs font-semibold border border-st-border">
-                Editar
-              </button>
-              <button className="px-4 py-2 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none">
-                Agendar Serviço
-              </button>
             </div>
           </div>
         ))}

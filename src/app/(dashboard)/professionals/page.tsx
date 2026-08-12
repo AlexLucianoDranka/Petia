@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { UserCheck, Plus, Search } from 'lucide-react';
+import { UserCheck, Plus, Search, Phone, Mail } from 'lucide-react';
 import { INITIAL_PROFESSIONALS, Professional } from '@/lib/data/professionals';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
@@ -48,53 +48,56 @@ export default function ProfessionalsPage() {
         />
       </div>
 
-      {/* 1 Coluna por Profissional na Horizontal (100% Tela) */}
+      {/* Structured Single Column Layout per Professional */}
       <div className="grid grid-cols-1 w-full space-y-3">
         {filtered.map((prof) => (
           <div
             key={prof.id}
-            className="card p-4 sm:p-5 rounded-2xl w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-st-border hover:border-st-electric/40 transition-all"
+            className="card p-4 sm:p-5 rounded-2xl w-full border border-st-border hover:border-st-electric/40 transition-all space-y-4"
           >
-            {/* Prof Info */}
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex items-center justify-center font-extrabold text-base shrink-0 shadow-glow">
-                {prof.name.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-extrabold text-st-arctic text-base truncate">{prof.name}</h3>
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 whitespace-nowrap">
-                    {prof.specialty === 'veterinario' ? 'Veterinário' : prof.specialty === 'groomer' ? 'Groomer' : 'Banhista'}
-                  </span>
+            {/* Header Line */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex items-center justify-center font-extrabold text-base shrink-0 shadow-glow">
+                  {prof.name.slice(0, 2).toUpperCase()}
                 </div>
-                <p className="text-xs text-st-muted mt-0.5 capitalize">{prof.specialty}</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-st-arctic text-base leading-tight">{prof.name}</h3>
+                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 whitespace-nowrap">
+                      {prof.specialty === 'veterinario' ? 'Veterinário' : prof.specialty === 'groomer' ? 'Groomer' : 'Banhista'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-st-muted mt-0.5 capitalize">{prof.specialty}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1.5 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic text-xs font-semibold border border-st-border">
+                  Editar
+                </button>
+                <button className="px-4 py-1.5 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none">
+                  Escala de Horários
+                </button>
               </div>
             </div>
 
-            {/* Internal Columns: CRMV & Commission % */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs w-full lg:w-auto border-t lg:border-t-0 lg:border-l border-st-border/40 pt-3 lg:pt-0 lg:pl-4">
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">CRMV / Registro</span>
+            {/* Inner Structured Box (Dados Ancorados) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">CRMV / Registro Profissional</span>
                 <span className="font-mono font-semibold text-st-arctic block">{prof.document_number || 'Não aplicável'}</span>
               </div>
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Comissão Padrão</span>
+
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Comissão Padrão</span>
                 <span className="font-extrabold text-st-electric block">{prof.commission_percent}% das vendas</span>
               </div>
-              <div className="hidden sm:block">
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Status Escala</span>
-                <span className="text-st-success font-semibold block">Ativo (Seg a Sex)</span>
-              </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-st-border/20">
-              <button className="px-3 py-1.5 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic text-xs font-semibold border border-st-border">
-                Editar
-              </button>
-              <button className="px-4 py-2 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none">
-                Escala de Horários
-              </button>
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Status da Escala</span>
+                <span className="text-st-success font-semibold block">Ativo (Segunda a Sexta)</span>
+              </div>
             </div>
           </div>
         ))}

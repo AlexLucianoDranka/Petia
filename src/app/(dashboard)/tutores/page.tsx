@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Plus, Search, Phone, Mail, MapPin, Dog, MessageSquare } from 'lucide-react';
+import { Users, Plus, Search, Phone, Mail, MapPin, Dog, MessageSquare, ChevronRight } from 'lucide-react';
 import { INITIAL_CUSTOMERS } from '@/lib/mockData';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
@@ -46,60 +46,62 @@ export default function TutoresPage() {
         />
       </div>
 
-      {/* 1 Coluna por Tutor na Horizontal (100% Tela) */}
+      {/* Structured Single Column Layout per Tutor */}
       <div className="grid grid-cols-1 w-full space-y-3">
         {filteredTutores.map((tutor) => (
           <div
             key={tutor.id}
-            className="card p-4 sm:p-5 rounded-2xl w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-st-border hover:border-st-electric/40 transition-all"
+            className="card p-4 sm:p-5 rounded-2xl w-full border border-st-border hover:border-st-electric/40 transition-all space-y-4"
           >
-            {/* Tutor Name & Contact */}
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex items-center justify-center font-extrabold text-base shrink-0 shadow-glow">
-                {tutor.name.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-extrabold text-st-arctic text-base truncate">{tutor.name}</h3>
-                <div className="flex items-center gap-3 text-xs text-st-muted mt-0.5 flex-wrap">
-                  <span className="flex items-center gap-1 font-mono">
-                    <Phone className="w-3.5 h-3.5 text-st-electric" /> {tutor.phone}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-st-electric" /> {tutor.email || 'contato@email.com'}
-                  </span>
+            {/* Header Line */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex items-center justify-center font-extrabold text-base shrink-0 shadow-glow">
+                  {tutor.name.slice(0, 2).toUpperCase()}
                 </div>
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-st-arctic text-base truncate leading-tight">{tutor.name}</h3>
+                  <p className="text-xs text-st-muted mt-0.5 truncate">{tutor.email || 'contato@email.com'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://wa.me/55${tutor.phone?.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-1.5 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic font-semibold text-xs border border-st-border flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-st-electric" /> WhatsApp
+                </a>
+                <button className="px-4 py-1.5 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none">
+                  Ficha Completa
+                </button>
               </div>
             </div>
 
-            {/* Internal Columns: Address & Pets */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs w-full lg:w-auto border-t lg:border-t-0 lg:border-l border-st-border/40 pt-3 lg:pt-0 lg:pl-4">
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Endereço Cadastrado</span>
+            {/* Inner Structured Box (Dados Ancorados) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">WhatsApp / Telefone</span>
+                <span className="font-mono font-semibold text-st-arctic flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-st-electric shrink-0" /> {tutor.phone}
+                </span>
+              </div>
+
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Endereço Principal</span>
                 <span className="font-medium text-st-arctic flex items-center gap-1 truncate">
                   <MapPin className="w-3 h-3 text-st-electric shrink-0" /> São Paulo - SP
                 </span>
               </div>
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Pets do Tutor</span>
-                <span className="font-semibold text-st-electric flex items-center gap-1">
+
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Pets Vínculados</span>
+                <span className="font-semibold text-st-electric flex items-center gap-1 truncate">
                   <Dog className="w-3.5 h-3.5 shrink-0" /> Thor (Golden), Luna (Persa)
                 </span>
               </div>
-            </div>
-
-            {/* Action Button */}
-            <div className="flex items-center justify-end gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-st-border/20">
-              <a
-                href={`https://wa.me/55${tutor.phone?.replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noreferrer"
-                className="px-3.5 py-2 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic font-semibold text-xs border border-st-border flex items-center gap-1.5 whitespace-nowrap"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-st-electric" /> WhatsApp
-              </a>
-              <button className="px-4 py-2 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none">
-                Ver Ficha Completa
-              </button>
             </div>
           </div>
         ))}

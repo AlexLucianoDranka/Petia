@@ -15,6 +15,7 @@ import {
   Calendar,
   User,
   Weight,
+  ChevronRight,
 } from 'lucide-react';
 import { INITIAL_PETS, INITIAL_MEDICAL_RECORDS } from '@/lib/mockData';
 import { Pet, PetMedicalRecord } from '@/types/database';
@@ -95,63 +96,78 @@ export default function PetsPage() {
         />
       </div>
 
-      {/* Unique Horizontal Column per Pet (1 Coluna por Pet na Horizontal / 100% Tela) */}
+      {/* Structured Single Column Card Layout */}
       <div className="grid grid-cols-1 w-full space-y-3">
         {filteredPets.map((pet) => (
           <div
             key={pet.id}
             onClick={() => setSelectedPet(pet)}
-            className="card card-interactive p-4 sm:p-5 rounded-2xl w-full flex flex-col md:flex-row md:items-center justify-between gap-4 group border border-st-border hover:border-st-electric/40 transition-all cursor-pointer"
+            className="card p-4 sm:p-5 rounded-2xl w-full border border-st-border hover:border-st-electric/40 transition-all cursor-pointer space-y-4"
           >
-            {/* Left Info: Pet Image Avatar & General Details */}
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-14 h-14 rounded-2xl bg-st-surface border border-st-border overflow-hidden shrink-0 flex items-center justify-center relative">
-                {pet.photo_url ? (
-                  <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
-                ) : (
-                  <Dog className="w-7 h-7 text-st-electric" />
-                )}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-extrabold text-st-arctic text-base group-hover:text-st-electric transition-colors">{pet.name}</h3>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 whitespace-nowrap">
-                    {pet.species === 'dog' ? 'Cão' : pet.species === 'cat' ? 'Gato' : pet.species}
-                  </span>
-                  <span className="text-[10px] text-st-muted font-medium uppercase px-2 py-0.5 rounded-full bg-st-surface border border-st-border whitespace-nowrap">
-                    {pet.sex === 'M' ? 'Macho' : 'Fêmea'}
-                  </span>
+            {/* Header Line */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-st-surface border border-st-border overflow-hidden shrink-0 flex items-center justify-center">
+                  {pet.photo_url ? (
+                    <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Dog className="w-6 h-6 text-st-electric" />
+                  )}
                 </div>
-                <p className="text-xs text-st-muted mt-0.5 truncate">{pet.breed || 'SRD'}</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-st-arctic text-base leading-tight">{pet.name}</h3>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 whitespace-nowrap">
+                      {pet.species === 'dog' ? 'Cão' : pet.species === 'cat' ? 'Gato' : pet.species}
+                    </span>
+                    <span className="text-[10px] text-st-muted font-medium uppercase px-2 py-0.5 rounded-full bg-st-surface border border-st-border whitespace-nowrap">
+                      {pet.sex === 'M' ? 'Macho' : 'Fêmea'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-st-muted mt-0.5 truncate">{pet.breed || 'SRD'}</p>
+                </div>
               </div>
-            </div>
 
-            {/* Middle Info: Tutor & Vitals in Columns inside Card */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs w-full md:w-auto border-t md:border-t-0 md:border-l border-st-border/40 pt-3 md:pt-0 md:pl-4">
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Tutor Responsável</span>
-                <span className="font-semibold text-st-arctic truncate block">{pet.customer_name || 'Mariana Silva'}</span>
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Idade / Peso</span>
-                <span className="font-semibold text-st-arctic block">{pet.weight ? `${pet.weight} kg` : 'N/I'}</span>
-              </div>
-              <div className="hidden sm:block">
-                <span className="text-[10px] font-bold text-st-muted uppercase block">Prontuário</span>
-                <span className="font-mono text-st-electric font-semibold block">#PR-{pet.id.slice(0, 4)}</span>
-              </div>
-            </div>
-
-            {/* Right Action */}
-            <div className="flex items-center justify-end shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-st-border/20">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedPet(pet);
                 }}
-                className="w-full md:w-auto px-4 py-2 bg-st-electric/15 hover:bg-st-electric text-st-electric hover:text-white font-bold rounded-xl text-xs transition-colors whitespace-nowrap border border-st-electric/30"
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-st-electric/15 hover:bg-st-electric text-st-electric hover:text-white font-bold rounded-xl text-xs transition-colors whitespace-nowrap border border-st-electric/30 shrink-0"
               >
-                Abrir Prontuário
+                <span>Prontuário</span>
+                <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+              </button>
+            </div>
+
+            {/* Inner Structured Box (Dados ancorados e organizados) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Tutor Responsável</span>
+                <span className="font-semibold text-st-arctic truncate block">{pet.customer_name || 'Mariana Silva'}</span>
+              </div>
+
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Peso Atual</span>
+                <span className="font-semibold text-st-arctic block">{pet.weight ? `${pet.weight} kg` : 'N/I'}</span>
+              </div>
+
+              <div className="space-y-0.5 col-span-2 sm:col-span-1">
+                <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">Código Ficha</span>
+                <span className="font-mono text-st-electric font-bold block">#PR-{pet.id.slice(0, 5)}</span>
+              </div>
+            </div>
+
+            {/* Mobile Action Button */}
+            <div className="sm:hidden pt-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPet(pet);
+                }}
+                className="w-full py-2 bg-st-electric/15 text-st-electric font-bold rounded-xl text-xs border border-st-electric/30 text-center block"
+              >
+                Abrir Prontuário Clínico
               </button>
             </div>
           </div>
