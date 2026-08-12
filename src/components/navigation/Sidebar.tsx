@@ -19,6 +19,9 @@ import {
   Crown,
   User,
   Settings,
+  DollarSign,
+  Home,
+  ShoppingBag,
   LogOut,
   Menu,
   X,
@@ -34,6 +37,9 @@ const navItems = [
   { href: '/pets', key: 'pets', label: 'Pets (Prontuário)', icon: Dog },
   { href: '/tutores', key: 'tutores', label: 'Tutores (Clientes)', icon: Users },
   { href: '/checkin', key: 'checkin', label: 'Check-in & Checkout', icon: CheckCircle2 },
+  { href: '/financial', key: 'financial', label: 'Financeiro & Caixa PDV', icon: DollarSign },
+  { href: '/boarding', key: 'boarding', label: 'Hospedagem & Creche', icon: Home },
+  { href: '/store', key: 'store', label: 'Loja & Catálogo', icon: ShoppingBag },
   { href: '/professionals', key: 'professionals', label: 'Profissionais', icon: UserCheckIcon },
   { href: '/services', key: 'services', label: 'Serviços & Preços', icon: Briefcase },
   { href: '/inventory', key: 'inventory', label: 'Estoque & Insumos', icon: Package },
@@ -59,30 +65,30 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Sticky Top Header */}
-      <header className="md:hidden sticky top-0 z-40 bg-st-navy/95 backdrop-blur-md px-4 pb-3 pt-3 flex items-center justify-between shadow-sm border-none">
-        <div className="flex items-center gap-2.5">
+      {/* Mobile Sticky Top Header (Compact & Discreto) */}
+      <header className="md:hidden sticky top-0 z-40 bg-st-navy/95 backdrop-blur-md px-3 py-2 flex items-center justify-between shadow-sm border-none">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-st-muted hover:text-white rounded-lg hover:bg-st-surface transition-colors whitespace-nowrap shrink-0"
+            className="p-1.5 text-st-muted hover:text-white rounded-lg hover:bg-st-surface transition-colors whitespace-nowrap shrink-0"
             aria-label="Abrir menu"
           >
-            {isOpen ? <X className="w-5 h-5 shrink-0" /> : <Menu className="w-5 h-5 shrink-0" />}
+            {isOpen ? <X className="w-4 h-4 shrink-0" /> : <Menu className="w-4 h-4 shrink-0" />}
           </button>
           <Link href="/dashboard" className="flex items-center gap-2">
             <img
               src="/icons/petshop-icon.svg"
               alt="Petia Logo"
-              className="w-9 h-9 rounded-xl shadow-glow object-contain shrink-0"
+              className="w-6 h-6 rounded-lg shadow-glow object-contain shrink-0"
             />
-            <span className="font-bold text-st-arctic tracking-tight text-lg whitespace-nowrap">Petia</span>
+            <span className="font-bold text-st-arctic tracking-tight text-sm whitespace-nowrap">Petia</span>
           </Link>
         </div>
 
         <Link
           href="/login"
-          className="p-2 text-st-muted hover:text-red-400 transition-colors rounded-lg hover:bg-st-surface flex items-center gap-1.5 text-xs font-medium whitespace-nowrap shrink-0"
+          className="p-1.5 text-st-muted hover:text-red-400 transition-colors rounded-lg hover:bg-st-surface flex items-center gap-1.5 text-xs font-medium whitespace-nowrap shrink-0"
         >
           <LogOut className="w-4 h-4 shrink-0" />
         </Link>
@@ -103,17 +109,17 @@ export function Sidebar() {
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
-        {/* Brand Header */}
-        <div className="px-5 pb-4 pt-5 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3 group">
+        {/* Brand Header (Compact & Menor) */}
+        <div className="px-4 py-3.5 flex items-center justify-between border-b border-st-border/20">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group">
             <img
               src="/icons/petshop-icon.svg"
               alt="Petia Logo"
-              className="w-12 h-12 rounded-2xl shadow-glow group-hover:scale-105 transition-transform shrink-0 object-contain"
+              className="w-8 h-8 rounded-xl shadow-glow group-hover:scale-105 transition-transform shrink-0 object-contain"
             />
             <div>
-              <span className="font-extrabold text-st-arctic tracking-tight text-xl block leading-none whitespace-nowrap">Petia</span>
-              <span className="text-[10px] text-st-muted uppercase tracking-wider font-semibold whitespace-nowrap">
+              <span className="font-extrabold text-st-arctic tracking-tight text-base block leading-none whitespace-nowrap">Petia</span>
+              <span className="text-[9px] text-st-muted uppercase tracking-wider font-semibold whitespace-nowrap">
                 Gestão Veterinária
               </span>
             </div>
@@ -122,9 +128,9 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="md:hidden p-1.5 text-st-muted hover:text-white rounded-lg hover:bg-st-surface transition-colors whitespace-nowrap shrink-0"
+            className="md:hidden p-1 text-st-muted hover:text-white rounded-lg hover:bg-st-surface transition-colors whitespace-nowrap shrink-0"
           >
-            <X className="w-5 h-5 shrink-0" />
+            <X className="w-4 h-4 shrink-0" />
           </button>
         </div>
 

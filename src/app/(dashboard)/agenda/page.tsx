@@ -6,10 +6,15 @@ import {
   User,
   Dog,
   MessageSquare,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Plus,
 } from 'lucide-react';
 import { INITIAL_APPOINTMENTS, INITIAL_STAFF } from '@/lib/mockData';
 import { AppointmentStatus } from '@/types/database';
 import { whatsappService } from '@/services/notifications/whatsapp';
+import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
 export default function AgendaPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
@@ -40,17 +45,17 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-6 animate-fade-up w-full pb-12">
       {/* Top Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 card p-6 rounded-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 card p-6 rounded-2xl w-full">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-extrabold text-st-arctic tracking-tight flex items-center gap-2">
               <CalendarIcon className="w-6 h-6 text-st-electric" />
               <span>Agenda Visual</span>
             </h1>
-            <span className="bg-st-electric/20 text-st-electric border border-st-electric/30 font-bold text-xs px-2.5 py-1 rounded-full">
-              4 Agendamentos
+            <span className="bg-st-electric/20 text-st-electric border border-st-electric/30 font-bold text-xs px-2.5 py-1 rounded-full whitespace-nowrap">
+              {filteredAppointments.length} Agendamentos
             </span>
           </div>
           <p className="text-xs text-st-muted mt-0.5">Visão de horários, bloqueios e controle de banho, tosa e consultas</p>
@@ -61,7 +66,7 @@ export default function AgendaPage() {
           <div className="bg-st-navy p-1 rounded-xl flex items-center gap-1 border border-st-border">
             <button
               onClick={() => setViewMode('day')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 viewMode === 'day' ? 'bg-st-electric text-white shadow-glow-sm' : 'text-st-muted hover:text-st-arctic'
               }`}
             >
@@ -69,7 +74,7 @@ export default function AgendaPage() {
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 viewMode === 'week' ? 'bg-st-electric text-white shadow-glow-sm' : 'text-st-muted hover:text-st-arctic'
               }`}
             >
@@ -88,176 +93,83 @@ export default function AgendaPage() {
             <option value="done">Concluído</option>
             <option value="cancelled">Cancelado</option>
           </select>
+        </div>
+      </div>
 
-          <select
-            value={staffFilter}
-            onChange={(e) => setStaffFilter(e.target.value)}
-            className="bg-st-surface border border-st-border rounded-xl px-3 py-2 text-xs font-semibold text-st-arctic outline-none focus:border-st-electric"
+      {/* 1 Coluna por Agendamento na Horizontal (100% Tela) */}
+      <div className="grid grid-cols-1 w-full space-y-3">
+        {filteredAppointments.map((apt) => (
+          <div
+            key={apt.id}
+            onClick={() => setSelectedAppointment(apt)}
+            className="card p-4 sm:p-5 rounded-2xl w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-st-border hover:border-st-electric/40 transition-all cursor-pointer"
           >
-            <option value="all">Todos os Profissionais</option>
-            {INITIAL_STAFF.map((st) => (
-              <option key={st.id} value={st.id}>
-                {st.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Interactive Timeline Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Schedule List Timeline */}
-        <div className="lg:col-span-2 space-y-3">
-          {filteredAppointments.length === 0 ? (
-            <div className="card p-12 rounded-2xl text-center space-y-3">
-              <CalendarIcon className="w-10 h-10 text-st-electric mx-auto" />
-              <h3 className="font-bold text-st-arctic">Nenhum agendamento encontrado</h3>
-              <p className="text-xs text-st-muted">Ajuste os filtros acima para visualizar outros horários.</p>
-            </div>
-          ) : (
-            filteredAppointments.map((apt) => {
-              const isSelected = selectedAppointment?.id === apt.id;
-              const formattedTime = new Date(apt.scheduled_at).toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
-
-              return (
-                <div
-                  key={apt.id}
-                  onClick={() => setSelectedAppointment(apt)}
-                  className={`cursor-pointer card p-5 rounded-xl border transition-all ${
-                    isSelected
-                      ? 'border-st-electric ring-2 ring-st-electric/30 bg-st-surface-2'
-                      : 'hover:border-st-electric/60'
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="text-center bg-st-electric/15 p-3 rounded-xl border border-st-electric/30 min-w-[70px]">
-                        <span className="block text-xs text-st-electric font-extrabold uppercase">Horário</span>
-                        <span className="text-lg font-black text-st-arctic font-mono">{formattedTime}</span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-st-arctic text-base">{apt.pet_name}</h3>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                              apt.status === 'confirmed'
-                                ? 'bg-st-success/20 text-st-success border-st-success/30'
-                                : apt.status === 'done'
-                                ? 'bg-st-surface-2 text-st-muted border-st-border'
-                                : 'bg-st-warning/20 text-st-warning border-st-warning/30'
-                            }`}
-                          >
-                            {apt.status.toUpperCase()}
-                          </span>
-                        </div>
-                        <p className="text-xs text-st-muted font-medium">
-                          Serviço: <span className="font-semibold text-st-arctic">{apt.service_type}</span>
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-st-muted pt-1">
-                          <span className="flex items-center gap-1">
-                            <User className="w-3.5 h-3.5 text-st-muted" />
-                            {apt.customer_name}
-                          </span>
-                          <span className="font-bold text-st-arctic">
-                            R$ {apt.price.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-end sm:self-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSendWhatsApp(apt);
-                        }}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-st-success/20 hover:bg-st-success/30 text-st-success border border-st-success/40 text-xs font-semibold transition-all"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Selected Appointment Details */}
-        <div className="card rounded-2xl p-6 h-fit space-y-5">
-          {selectedAppointment ? (
-            <div className="space-y-4">
-              <div className="border-b border-st-border/40 pb-3 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-st-arctic text-base">Detalhes do Agendamento</h3>
-                  <p className="text-xs text-st-muted">ID: #{selectedAppointment.id}</p>
-                </div>
-                <Dog className="w-6 h-6 text-st-electric" />
+            {/* Time & Service */}
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-14 h-14 rounded-2xl bg-st-electric/20 text-st-electric border border-st-electric/40 flex flex-col items-center justify-center shrink-0 shadow-glow">
+                <span className="text-xs font-extrabold font-mono">{apt.scheduled_at ? apt.scheduled_at.split('T')[1]?.slice(0, 5) : '09:00'}</span>
+                <span className="text-[9px] text-st-muted uppercase">Horário</span>
               </div>
 
-              <div className="space-y-3 text-xs">
-                <div>
-                  <span className="text-st-muted uppercase font-bold text-[10px]">Pet / Paciente</span>
-                  <p className="font-extrabold text-st-arctic text-sm">{selectedAppointment.pet_name}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-extrabold text-st-arctic text-base truncate">{apt.service_type}</h3>
+                  <span
+                    className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border whitespace-nowrap ${
+                      apt.status === 'confirmed'
+                        ? 'bg-st-success/20 text-st-success border-st-success/30'
+                        : apt.status === 'done'
+                        ? 'bg-st-electric/20 text-st-electric border-st-electric/30'
+                        : 'bg-st-warning/20 text-st-warning border-st-warning/30'
+                    }`}
+                  >
+                    {apt.status === 'confirmed' ? 'Confirmado' : apt.status === 'done' ? 'Concluído' : 'Agendado'}
+                  </span>
                 </div>
-
-                <div>
-                  <span className="text-st-muted uppercase font-bold text-[10px]">Tutor Responsável</span>
-                  <p className="font-semibold text-st-arctic">{selectedAppointment.customer_name}</p>
-                  <p className="text-st-muted font-mono">{selectedAppointment.customer_phone}</p>
-                </div>
-
-                <div>
-                  <span className="text-st-muted uppercase font-bold text-[10px]">Serviço Solicitado</span>
-                  <p className="font-semibold text-st-arctic">{selectedAppointment.service_type}</p>
-                  <p className="text-st-electric font-bold">R$ {selectedAppointment.price.toFixed(2)}</p>
-                </div>
-
-                {selectedAppointment.notes && (
-                  <div className="p-3 bg-st-navy rounded-xl border border-st-border">
-                    <span className="text-st-muted font-bold text-[10px] uppercase">Observações</span>
-                    <p className="text-st-arctic mt-0.5">{selectedAppointment.notes}</p>
-                  </div>
-                )}
-
-                <div className="pt-3 border-t border-st-border/40 space-y-2">
-                  <span className="text-slate-400 font-bold text-[10px] uppercase">Alterar Status Rápido</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => handleUpdateStatus(selectedAppointment.id, 'confirmed')}
-                      className="px-3 py-2 rounded-xl bg-st-electric/20 hover:bg-st-electric/30 text-st-electric font-semibold text-xs border border-st-electric/40"
-                    >
-                      Confirmar
-                    </button>
-                    <button
-                      onClick={() => handleUpdateStatus(selectedAppointment.id, 'done')}
-                      className="px-3 py-2 rounded-xl bg-st-success/20 hover:bg-st-success/30 text-st-success font-semibold text-xs border border-st-success/40"
-                    >
-                      Concluir
-                    </button>
-                    <button
-                      onClick={() => handleUpdateStatus(selectedAppointment.id, 'cancelled')}
-                      className="col-span-2 px-3 py-2 rounded-xl bg-st-danger/20 hover:bg-st-danger/30 text-st-danger font-semibold text-xs border border-st-danger/40"
-                    >
-                      Cancelar Agendamento
-                    </button>
-                  </div>
-                </div>
+                <p className="text-xs text-st-muted mt-0.5">
+                  Pet: <strong className="text-st-arctic">{apt.pet_name}</strong> • Tutor: {apt.customer_name}
+                </p>
               </div>
             </div>
-          ) : (
-            <div className="py-12 text-center text-st-muted space-y-2">
-              <CalendarIcon className="w-8 h-8 text-st-muted mx-auto" />
-              <p className="text-xs font-medium">Clique em um agendamento à esquerda para visualizar detalhes e enviar WhatsApp.</p>
+
+            {/* Professional & Notes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs w-full lg:w-auto border-t lg:border-t-0 lg:border-l border-st-border/40 pt-3 lg:pt-0 lg:pl-4">
+              <div>
+                <span className="text-[10px] font-bold text-st-muted uppercase block">Profissional Escala</span>
+                <span className="font-semibold text-st-arctic block">{apt.staff_name || 'Dr. Lucas Mendes'}</span>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-st-muted uppercase block">Contato Tutor</span>
+                <span className="font-mono text-st-electric font-semibold block">{apt.customer_phone || '(11) 99123-4567'}</span>
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-st-border/20">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSendWhatsApp(apt);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic font-semibold text-xs border border-st-border flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-st-electric" /> Lembrete WhatsApp
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpdateStatus(apt.id, 'done');
+                }}
+                className="px-4 py-2 bg-st-electric hover:bg-st-steel text-white font-bold rounded-xl text-xs shadow-glow transition-all whitespace-nowrap border-none"
+              >
+                Concluir Atendimento
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
+
+      <SolidaTechBadge variant="auth" />
     </div>
   );
 }

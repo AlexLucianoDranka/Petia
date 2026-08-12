@@ -9,6 +9,7 @@ import { formatCPF, formatCNPJ, formatPhone } from '@/lib/utils';
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -76,7 +77,7 @@ export default function LoginPage() {
 
     const clinicData = {
       name: clinicName,
-      cnpj: clinicCnpj, // Pode ser vazio se não tiver CNPJ
+      cnpj: clinicCnpj,
       address: clinicAddress,
       city: clinicCity,
       state: clinicState,
@@ -87,7 +88,6 @@ export default function LoginPage() {
     localStorage.setItem('petia_clinic_data', JSON.stringify(clinicData));
 
     startTransition(() => {
-      // Redirect to /planos so user can choose their plan
       window.location.href = '/planos?new_account=true';
     });
   };
@@ -206,6 +206,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-st-muted hover:text-st-arctic transition-colors whitespace-nowrap shrink-0"
+                    title={showPassword ? 'Ocultar senha' : 'Visualizar senha'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -239,7 +240,7 @@ export default function LoginPage() {
               </button>
             </form>
           ) : (
-            /* Register Form (Representante + Clínica) */
+            /* Register Form (Representante + Clínica com Visualização de Senha) */
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5 text-xs">
               <div className="text-[11px] font-bold uppercase text-st-electric border-b border-st-border/40 pb-1 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5" />
@@ -272,14 +273,24 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <label className="block text-st-muted mb-1 font-semibold">Senha de Acesso *</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-st-surface border border-st-border text-st-arctic focus:border-st-electric outline-none"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      required
+                      placeholder="••••••••"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      className="w-full p-2.5 pr-9 rounded-lg bg-st-surface border border-st-border text-st-arctic focus:border-st-electric outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-st-muted hover:text-st-arctic transition-colors whitespace-nowrap shrink-0"
+                      title={showRegPassword ? 'Ocultar senha' : 'Visualizar senha'}
+                    >
+                      {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -25,12 +25,18 @@ export const ALL_MENU_KEYS = [
   'checkin',
   'pets',
   'tutores',
+  'financial',
+  'boarding',
+  'store',
   'professionals',
   'services',
   'inventory',
   'subscriptions',
   'automations',
   'staff',
+  'planos',
+  'perfil',
+  'settings',
 ];
 
 export function getRolePresetPermissions(role: UserRole, userId: string): StaffPermissionRule[] {
@@ -55,12 +61,12 @@ export function getRolePresetPermissions(role: UserRole, userId: string): StaffP
         can_view: true,
         can_create: true,
         can_edit: true,
-        can_delete: key !== 'staff',
+        can_delete: key !== 'staff' && key !== 'settings',
       };
     }
 
     if (role === 'vet') {
-      const isAllowed = ['dashboard', 'agenda', 'checkin', 'pets', 'tutores', 'services'].includes(key);
+      const isAllowed = ['dashboard', 'agenda', 'checkin', 'pets', 'tutores', 'services', 'boarding'].includes(key);
       return {
         user_id: userId,
         menu_key: key,
@@ -73,14 +79,14 @@ export function getRolePresetPermissions(role: UserRole, userId: string): StaffP
     }
 
     // Attendant
-    const isAllowed = ['agenda', 'checkin', 'pets', 'tutores', 'inventory'].includes(key);
+    const isAllowed = ['agenda', 'checkin', 'pets', 'tutores', 'inventory', 'boarding', 'store', 'financial'].includes(key);
     return {
       user_id: userId,
       menu_key: key,
       is_hidden: !isAllowed,
       can_view: isAllowed,
-      can_create: isAllowed && key !== 'inventory',
-      can_edit: isAllowed && key !== 'inventory',
+      can_create: isAllowed && key !== 'inventory' && key !== 'financial',
+      can_edit: isAllowed && key !== 'inventory' && key !== 'financial',
       can_delete: false,
     };
   });

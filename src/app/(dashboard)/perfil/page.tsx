@@ -26,6 +26,14 @@ import {
   Crown,
   Bell,
   Save,
+  Dog,
+  Syringe,
+  Package,
+  Flame,
+  ArrowRight,
+  Sparkles,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { formatCPF, formatPhone } from '@/lib/utils';
@@ -44,18 +52,26 @@ export default function PerfilPage() {
   const [clinicName, setClinicName] = useState('Clínica Veterinária Petia');
   const [planType, setPlanType] = useState<PlanType>('ouro');
 
-  // Security Accordion
+  // Security Accordion & Password Visibility Toggles
   const [activeSecuritySection, setActiveSecuritySection] = useState<'none' | 'email' | 'password'>('none');
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Email Notifications Preferences (Resend Ready)
-  const [notifAppointments, setNotifAppointments] = useState(true);
-  const [notifVaccines, setNotifVaccines] = useState(true);
-  const [notifDailySummary, setNotifDailySummary] = useState(false);
-  const [notifSolidaTech, setNotifSolidaTech] = useState(true);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Email Notifications Preferences (6 Groups like KmZero)
+  const [emailPrefs, setEmailPrefs] = useState({
+    account: true,
+    appointments: true,
+    vaccines: true,
+    billing: true,
+    inventory: true,
+    engagement: true,
+  });
 
   // Account Deletion Modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -92,7 +108,7 @@ export default function PerfilPage() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Avatar Upload Handler with Base64 Compression
+  // Avatar Upload Handler with Base64 Canvas Compression
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -175,11 +191,17 @@ export default function PerfilPage() {
     triggerToast('Senha alterada com sucesso!');
   };
 
+  const toggleEmailPref = (key: keyof typeof emailPrefs) => {
+    const updated = { ...emailPrefs, [key]: !emailPrefs[key] };
+    setEmailPrefs(updated);
+    triggerToast('Preferências de e-mail salvas!');
+  };
+
   const handleExportData = () => {
     const exportObject = {
       representative: { name, email, cpf, birthDate, whatsapp },
       clinic: { clinicName, planType },
-      notificationPreferences: { notifAppointments, notifVaccines, notifDailySummary, notifSolidaTech },
+      notificationPreferences: emailPrefs,
       exportedAt: new Date().toISOString(),
     };
     const jsonStr = JSON.stringify(exportObject, null, 2);
@@ -196,6 +218,45 @@ export default function PerfilPage() {
   };
 
   const currentPlan = PLANS[planType] || PLANS['ouro'];
+
+  const PREFERENCE_GROUPS = [
+    {
+      key: 'account' as const,
+      title: 'Conta & Segurança',
+      description: 'E-mails informativos sobre sua conta e segurança (Boas-vindas, segurança da clínica)',
+      icon: ShieldCheck,
+    },
+    {
+      key: 'appointments' as const,
+      title: 'Agendamentos & Tutores',
+      description: 'Confirmação de novos agendamentos e cadastros de tutores na clínica',
+      icon: Dog,
+    },
+    {
+      key: 'vaccines' as const,
+      title: 'Vacinas & Prontuário',
+      description: 'Alertas de vencimento de vacinas, vermífugos e retorno de consultas',
+      icon: Syringe,
+    },
+    {
+      key: 'billing' as const,
+      title: 'Cobrança & Assinatura',
+      description: 'Recibos de pagamentos Stripe, avisos de faturas e renovação de planos',
+      icon: CreditCard,
+    },
+    {
+      key: 'inventory' as const,
+      title: 'Estoque & Comissões',
+      description: 'Alertas de produtos com estoque baixo e relatórios de comissão dos profissionais',
+      icon: Package,
+    },
+    {
+      key: 'engagement' as const,
+      title: 'Engajamento & Dicas',
+      description: 'Comunicados de novas funcionalidades, relatórios mensais e dicas do Petia',
+      icon: Flame,
+    },
+  ];
 
   return (
     <div className="px-4 pt-6 pb-12 max-w-3xl mx-auto space-y-6 animate-fade-up">
@@ -214,23 +275,55 @@ export default function PerfilPage() {
         </div>
       )}
 
-      {/* 1. Formulário de Informações Pessoais e Foto de Perfil */}
+      {/* 1. SubscriptionCard no Modelo KmZero */}
+      <div className="card p-4 sm:p-5 border border-st-electric/30 bg-gradient-to-r from-st-navy via-st-surface to-st-surface rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center border border-st-electric/40 bg-st-electric/20 text-st-electric shrink-0 shadow-glow">
+              <Crown className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <div className="flex items-center gap-2 whitespace-nowrap overflow-x-auto no-scrollbar">
+                <span className="text-xs text-st-muted font-semibold uppercase tracking-wide shrink-0">Plano Atual:</span>
+                <h3 className="font-bold text-st-arctic text-base leading-none shrink-0">{currentPlan.name}</h3>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-st-success/20 text-st-success border border-st-success/30 whitespace-nowrap shrink-0">
+                  ATIVO NO STRIPE
+                </span>
+              </div>
+              <p className="text-xs text-st-muted truncate">
+                Limite: {currentPlan.limits.maxPets === 'ilimitado' ? 'Pets Ilimitados' : `até ${currentPlan.limits.maxPets} pets`} •{' '}
+                <span className="text-st-arctic font-medium">R$ {currentPlan.priceMonthly.toFixed(2)}/mês</span>
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/planos"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-st-electric hover:bg-st-steel shadow-glow transition-all whitespace-nowrap shrink-0 border-none"
+          >
+            <span>Ver / Gerenciar Planos</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* 2. Formulário de Informações Pessoais e Foto no Modelo KmZero */}
       <div className="card p-6 rounded-2xl space-y-5 border border-st-border">
         <h2 className="text-lg font-bold text-st-arctic flex items-center gap-2 border-b border-st-border/40 pb-3">
           <User className="w-5 h-5 text-st-electric" /> Informações Pessoais & Foto
         </h2>
 
         <form onSubmit={handleSaveProfile} className="space-y-5">
-          {/* Upload Foto de Perfil */}
+          {/* Upload Foto de Perfil no Modelo KmZero com Hover Camera Overlay */}
           <div className="flex flex-col items-center gap-3 pb-4 border-b border-st-border/40">
             <label htmlFor="avatar_file" className="cursor-pointer group relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-st-surface border-2 border-dashed border-st-border group-hover:border-st-electric transition-colors flex items-center justify-center relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-st-surface border-2 border-dashed border-st-border group-hover:border-st-electric transition-colors flex items-center justify-center relative shadow-md">
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-10 h-10 text-st-muted group-hover:text-st-electric" />
                 )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Camera className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -246,7 +339,7 @@ export default function PerfilPage() {
                 <Trash2 className="w-3.5 h-3.5" /> Remover Foto
               </button>
             ) : (
-              <p className="text-xs text-st-muted">Toque para alterar sua foto de perfil</p>
+              <p className="text-xs text-st-muted">Toque na imagem para alterar sua foto de perfil</p>
             )}
           </div>
 
@@ -309,50 +402,18 @@ export default function PerfilPage() {
               type="submit"
               className="flex items-center gap-2 px-5 py-2.5 bg-st-electric hover:bg-st-steel text-white font-extrabold text-xs rounded-xl shadow-glow transition-all whitespace-nowrap border-none"
             >
-              <Save className="w-4 h-4" /> Save Alterações
+              <Save className="w-4 h-4" /> Salvar Alterações
             </button>
           </div>
         </form>
       </div>
 
-      {/* 2. Card do Plano Ativo & Assinatura */}
-      <div className="card p-6 rounded-2xl space-y-4 border border-st-border bg-st-surface/40">
-        <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
-          <h2 className="text-lg font-bold text-st-arctic flex items-center gap-2">
-            <Crown className="w-5 h-5 text-st-electric" /> Plano & Assinatura Ativa
-          </h2>
-          <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-st-success/20 text-st-success border border-st-success/30 whitespace-nowrap">
-            Ativo no Stripe
-          </span>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="font-extrabold text-xl text-st-arctic">{currentPlan.name}</h3>
-            <p className="text-xs text-st-muted mt-0.5">{currentPlan.description}</p>
-            <span className="text-xs text-st-electric font-bold block mt-1">
-              R$ {currentPlan.priceMonthly.toFixed(2)} / mês
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Link
-              href="/planos"
-              className="flex-1 sm:flex-none text-center px-4 py-2.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-extrabold text-xs shadow-glow transition-all whitespace-nowrap"
-            >
-              Fazer Upgrade / Trocar Plano
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Card de Segurança da Conta (Trocar E-mail & Senha) */}
+      {/* 3. Card de Segurança da Conta no Modelo KmZero com Modos de Visualizar Senha */}
       <div className="card p-6 rounded-2xl space-y-4 border border-st-border">
         <h2 className="text-lg font-bold text-st-arctic flex items-center gap-2 border-b border-st-border/40 pb-3">
           <Shield className="w-5 h-5 text-st-electric" /> Segurança da Conta
         </h2>
 
-        {/* Accordion Buttons */}
         <div className="space-y-3">
           {/* Trocar E-mail */}
           <div className="border border-st-border/60 rounded-xl overflow-hidden bg-st-surface">
@@ -383,7 +444,7 @@ export default function PerfilPage() {
                 <div className="flex justify-end">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-st-electric text-white font-bold rounded-xl text-xs shadow-glow whitespace-nowrap"
+                    className="px-4 py-2 bg-st-electric text-white font-bold rounded-xl text-xs shadow-glow whitespace-nowrap border-none"
                   >
                     Confirmar Novo E-mail
                   </button>
@@ -392,7 +453,7 @@ export default function PerfilPage() {
             )}
           </div>
 
-          {/* Trocar Senha */}
+          {/* Trocar Senha com Botões de Visualizar Senha */}
           <div className="border border-st-border/60 rounded-xl overflow-hidden bg-st-surface">
             <button
               type="button"
@@ -409,40 +470,73 @@ export default function PerfilPage() {
               <form onSubmit={handleUpdatePassword} className="p-4 pt-0 space-y-3 text-xs border-t border-st-border/40">
                 <div>
                   <label className="block font-semibold text-st-muted mb-1">Senha Atual</label>
-                  <input
-                    type="password"
-                    required
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-st-navy border border-st-border text-st-arctic"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      required
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full p-2.5 pr-9 rounded-xl bg-st-navy border border-st-border text-st-arctic"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-st-muted hover:text-st-arctic transition-colors whitespace-nowrap shrink-0"
+                      title={showCurrentPassword ? 'Ocultar senha' : 'Visualizar senha'}
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-semibold text-st-muted mb-1">Nova Senha</label>
-                    <input
-                      type="password"
-                      required
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full p-2.5 rounded-xl bg-st-navy border border-st-border text-st-arctic"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        required
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full p-2.5 pr-9 rounded-xl bg-st-navy border border-st-border text-st-arctic"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-st-muted hover:text-st-arctic transition-colors whitespace-nowrap shrink-0"
+                        title={showNewPassword ? 'Ocultar senha' : 'Visualizar senha'}
+                      >
+                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
+
                   <div>
                     <label className="block font-semibold text-st-muted mb-1">Confirmar Nova Senha</label>
-                    <input
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full p-2.5 rounded-xl bg-st-navy border border-st-border text-st-arctic"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full p-2.5 pr-9 rounded-xl bg-st-navy border border-st-border text-st-arctic"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-st-muted hover:text-st-arctic transition-colors whitespace-nowrap shrink-0"
+                        title={showConfirmPassword ? 'Ocultar senha' : 'Visualizar senha'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-end">
+
+                <div className="flex justify-end pt-1">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-st-electric text-white font-bold rounded-xl text-xs shadow-glow whitespace-nowrap"
+                    className="px-4 py-2 bg-st-electric text-white font-bold rounded-xl text-xs shadow-glow whitespace-nowrap border-none"
                   >
                     Atualizar Senha
                   </button>
@@ -453,68 +547,59 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* 4. Notificações por E-mail (Resend Ready) */}
-      <div className="card p-6 rounded-2xl space-y-4 border border-st-border">
-        <h2 className="text-lg font-bold text-st-arctic flex items-center gap-2 border-b border-st-border/40 pb-3">
-          <Bell className="w-5 h-5 text-st-electric" /> Notificações por E-mail (Resend API)
-        </h2>
+      {/* 4. EmailPreferencesCard no Modelo Exato do KmZero */}
+      <div className="card p-6 rounded-2xl border border-st-border space-y-4">
+        <div className="flex items-center justify-between gap-3 border-b border-st-border/50 pb-4">
+          <div>
+            <h2 className="text-lg font-bold text-st-arctic flex items-center gap-2">
+              <Mail className="w-5 h-5 text-st-electric" /> Notificações por E-mail (Resend API)
+            </h2>
+            <p className="text-xs text-st-muted mt-1">
+              Escolha quais tipos de alertas e notificações você deseja receber na sua caixa de entrada
+            </p>
+          </div>
+        </div>
 
-        <div className="space-y-3 text-xs">
-          <label className="flex items-center justify-between p-3 rounded-xl bg-st-surface border border-st-border/60 cursor-pointer">
-            <div>
-              <span className="font-bold text-st-arctic block">Alertas de Agendamentos e Cancelamentos</span>
-              <span className="text-st-muted text-[11px]">Receba e-mail quando um tutor agendar ou cancelar um atendimento</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifAppointments}
-              onChange={() => setNotifAppointments(!notifAppointments)}
-              className="w-4 h-4 rounded text-st-electric focus:ring-0 cursor-pointer"
-            />
-          </label>
+        <div className="space-y-3">
+          {PREFERENCE_GROUPS.map((group) => {
+            const Icon = group.icon;
+            const isChecked = emailPrefs[group.key];
 
-          <label className="flex items-center justify-between p-3 rounded-xl bg-st-surface border border-st-border/60 cursor-pointer">
-            <div>
-              <span className="font-bold text-st-arctic block">Lembretes de Vacinas & Vermífugos</span>
-              <span className="text-st-muted text-[11px]">Relatório diário de pets com vacinas prestes a vencer</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifVaccines}
-              onChange={() => setNotifVaccines(!notifVaccines)}
-              className="w-4 h-4 rounded text-st-electric focus:ring-0 cursor-pointer"
-            />
-          </label>
+            return (
+              <div
+                key={group.key}
+                className="flex items-center justify-between gap-4 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/60 hover:border-st-electric/30 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-st-electric/10 text-st-electric shrink-0 mt-0.5">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-st-arctic">{group.title}</h4>
+                    <p className="text-[11px] text-st-muted mt-0.5 leading-relaxed">{group.description}</p>
+                  </div>
+                </div>
 
-          <label className="flex items-center justify-between p-3 rounded-xl bg-st-surface border border-st-border/60 cursor-pointer">
-            <div>
-              <span className="font-bold text-st-arctic block">Resumo Financeiro Diário do Caixa</span>
-              <span className="text-st-muted text-[11px]">E-mail de fechamento diário com total faturado no dia</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifDailySummary}
-              onChange={() => setNotifDailySummary(!notifDailySummary)}
-              className="w-4 h-4 rounded text-st-electric focus:ring-0 cursor-pointer"
-            />
-          </label>
-
-          <label className="flex items-center justify-between p-3 rounded-xl bg-st-surface border border-st-border/60 cursor-pointer">
-            <div>
-              <span className="font-bold text-st-arctic block">Notificações e Atualizações da Sólida Tech</span>
-              <span className="text-st-muted text-[11px]">Comunicados de novas funcionalidades e melhorias no Petia</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifSolidaTech}
-              onChange={() => setNotifSolidaTech(!notifSolidaTech)}
-              className="w-4 h-4 rounded text-st-electric focus:ring-0 cursor-pointer"
-            />
-          </label>
+                <button
+                  type="button"
+                  onClick={() => toggleEmailPref(group.key)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 cursor-pointer border-none ${
+                    isChecked ? 'bg-st-electric' : 'bg-st-surface border border-st-border'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isChecked ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* 5. LGPD Export & Zona de Risco */}
+      {/* 5. Privacidade LGPD & Zona de Risco no Modelo KmZero */}
       <div className="card p-6 rounded-2xl space-y-4 border border-st-border">
         <h2 className="text-lg font-bold text-st-arctic flex items-center gap-2 border-b border-st-border/40 pb-3">
           <Download className="w-5 h-5 text-st-electric" /> Privacidade & Dados LGPD
@@ -549,9 +634,9 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* Info do Sistema & Sólida Tech */}
+      {/* 6. Info do Sistema & Ecossistema Sólida Tech */}
       <div className="card p-6 rounded-2xl space-y-2 border border-st-border text-center">
-        <p className="text-xs font-bold text-st-arctic">Petia • Gestão Veterinária v1.4.2</p>
+        <p className="text-xs font-bold text-st-arctic">Petia • Gestão Veterinária & Pet Shop v1.4.2</p>
         <p className="text-[11px] text-st-muted">Desenvolvido com excelência por Sólida Tech © 2026</p>
         <div className="pt-2">
           <SolidaTechBadge variant="auth" />
@@ -597,7 +682,7 @@ export default function PerfilPage() {
                   localStorage.clear();
                   window.location.href = '/login';
                 }}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold disabled:opacity-40 whitespace-nowrap"
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold disabled:opacity-40 whitespace-nowrap border-none"
               >
                 Excluir Definitivamente
               </button>
