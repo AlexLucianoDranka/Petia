@@ -224,18 +224,23 @@ html.light select option {
   color: #0F172A !important;
 }
 
-/* ─── Trava Global de Linha Única (NUNCA Quebrar Texto em Botões e Badges) ─── */
+/* ─── Trava Global de Linha Única Apenas para Botões e Badges Explícitos ─── */
 button,
 .btn,
 a[class*="button"],
 a[class*="btn"],
-span[class*="rounded-full"],
-span[class*="rounded-lg"],
-span[class*="badge"],
-div[class*="badge"],
 .badge {
   white-space: nowrap !important;
   flex-shrink: 0 !important;
+}
+
+/* Prevenir Auto-Zoom do iOS Safari ao focar em inputs no celular */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* ─── Base ──────────────────────────────────────────────────── */

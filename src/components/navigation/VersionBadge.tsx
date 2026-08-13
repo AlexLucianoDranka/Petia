@@ -17,7 +17,7 @@ export function VersionBadge() {
     <button
       type="button"
       onClick={handleCheck}
-      className="fixed bottom-[calc(0.4rem+env(safe-area-inset-bottom,0px))] md:bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-[calc(0.75rem+env(safe-area-inset-right,0px))] md:right-[calc(1.25rem+env(safe-area-inset-right,0px))] z-40 flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-st-surface/90 border border-st-border/60 text-[9px] md:text-[10px] text-st-muted hover:text-white hover:border-st-electric transition-all select-none shadow-md group"
+      className="hidden md:flex fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-[calc(1.25rem+env(safe-area-inset-right,0px))] z-40 items-center gap-1.5 px-2.5 py-1 rounded-full bg-st-surface/90 border border-st-border/60 text-[10px] text-st-muted hover:text-white hover:border-st-electric transition-all select-none shadow-md group"
       title={`Versão ${APP_VERSION} — Clique para buscar atualizações`}
     >
       <RefreshCw

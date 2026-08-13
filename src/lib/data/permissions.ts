@@ -19,28 +19,31 @@ export interface StaffPermissionRule {
   can_delete: boolean;
 }
 
-export const ALL_MENU_KEYS = [
-  'dashboard',
-  'agenda',
-  'checkin',
-  'pets',
-  'tutores',
-  'financial',
-  'boarding',
-  'store',
-  'professionals',
-  'services',
-  'inventory',
-  'subscriptions',
-  'automations',
-  'staff',
-  'planos',
-  'perfil',
-  'settings',
+/** All menu keys with human-readable labels for the permissions matrix */
+export const ALL_MENU_KEYS: { key: string; label: string }[] = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'agenda', label: 'Agenda Visual' },
+  { key: 'checkin', label: 'Check-in & Checkout' },
+  { key: 'pets', label: 'Pets (Prontuário)' },
+  { key: 'tutores', label: 'Tutores (Clientes)' },
+  { key: 'financial', label: 'Financeiro & Caixa PDV' },
+  { key: 'boarding', label: 'Hospedagem & Creche' },
+  { key: 'store', label: 'Loja & Catálogo' },
+  { key: 'professionals', label: 'Profissionais' },
+  { key: 'services', label: 'Serviços & Preços' },
+  { key: 'inventory', label: 'Estoque & Insumos' },
+  { key: 'subscriptions', label: 'Planos Recorrentes' },
+  { key: 'automations', label: 'Central Automações' },
+  { key: 'staff', label: 'Gestão de Equipe' },
+  { key: 'tutor', label: 'Portal do Tutor' },
+  { key: 'avaliacoes', label: 'Avaliações & NPS' },
+  { key: 'planos', label: 'Planos & Assinatura' },
+  { key: 'perfil', label: 'Meu Perfil' },
+  { key: 'settings', label: 'Configurações Clínica' },
 ];
 
 export function getRolePresetPermissions(role: UserRole, userId: string): StaffPermissionRule[] {
-  return ALL_MENU_KEYS.map((key) => {
+  return ALL_MENU_KEYS.map(({ key }) => {
     if (role === 'owner') {
       return {
         user_id: userId,
@@ -54,39 +57,40 @@ export function getRolePresetPermissions(role: UserRole, userId: string): StaffP
     }
 
     if (role === 'manager') {
+      const restricted = ['staff', 'settings', 'planos'];
       return {
         user_id: userId,
         menu_key: key,
         is_hidden: false,
         can_view: true,
-        can_create: true,
-        can_edit: true,
-        can_delete: key !== 'staff' && key !== 'settings',
+        can_create: !restricted.includes(key),
+        can_edit: !restricted.includes(key),
+        can_delete: !restricted.includes(key),
       };
     }
 
     if (role === 'vet') {
-      const isAllowed = ['dashboard', 'agenda', 'checkin', 'pets', 'tutores', 'services', 'boarding'].includes(key);
+      const allowed = ['dashboard', 'agenda', 'checkin', 'pets', 'tutores', 'services', 'boarding'];
       return {
         user_id: userId,
         menu_key: key,
-        is_hidden: !isAllowed,
-        can_view: isAllowed,
-        can_create: isAllowed,
-        can_edit: isAllowed,
+        is_hidden: !allowed.includes(key),
+        can_view: allowed.includes(key),
+        can_create: allowed.includes(key),
+        can_edit: allowed.includes(key),
         can_delete: false,
       };
     }
 
-    // Attendant
-    const isAllowed = ['agenda', 'checkin', 'pets', 'tutores', 'inventory', 'boarding', 'store', 'financial'].includes(key);
+    // attendant
+    const allowed = ['agenda', 'checkin', 'pets', 'tutores', 'inventory', 'boarding', 'store', 'financial'];
     return {
       user_id: userId,
       menu_key: key,
-      is_hidden: !isAllowed,
-      can_view: isAllowed,
-      can_create: isAllowed && key !== 'inventory' && key !== 'financial',
-      can_edit: isAllowed && key !== 'inventory' && key !== 'financial',
+      is_hidden: !allowed.includes(key),
+      can_view: allowed.includes(key),
+      can_create: allowed.includes(key) && !['inventory', 'financial'].includes(key),
+      can_edit: allowed.includes(key) && !['inventory', 'financial'].includes(key),
       can_delete: false,
     };
   });
@@ -103,16 +107,18 @@ export async function fetchUserPermissions(userId: string): Promise<StaffPermiss
       return getRolePresetPermissions('owner', userId);
     }
     return data as StaffPermissionRule[];
-  } catch (err) {
+  } catch (_err) {
     return getRolePresetPermissions('owner', userId);
   }
 }
 
 export async function upsertStaffPermissions(rules: StaffPermissionRule[]): Promise<boolean> {
   try {
-    const { error } = await supabase.from('staff_permissions').upsert(rules, { onConflict: 'user_id,menu_key' });
+    const { error } = await supabase
+      .from('staff_permissions')
+      .upsert(rules, { onConflict: 'user_id,menu_key' });
     return !error;
-  } catch (err) {
+  } catch (_err) {
     return true;
   }
 }

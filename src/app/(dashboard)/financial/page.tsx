@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
+import jsPDF from 'jspdf';
 
 export default function FinancialPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'pdv' | 'receivables' | 'payables' | 'commissions'>('overview');
@@ -59,12 +60,40 @@ export default function FinancialPage() {
 
   const subtotalPdv = pdvItems.reduce((acc, item) => acc + item.price * item.qty, 0);
 
+  const generateReceiptPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Petia - Recibo de Pagamento Balcao', 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Cliente / Tutor: ${pdvClient}`, 14, 30);
+    doc.text(`Pet: ${pdvPet}`, 14, 36);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, 14, 42);
+    doc.text(`Forma de Pagamento: ${paymentMethod.toUpperCase()}`, 14, 48);
+
+    doc.text('------------------------------------------------------------', 14, 54);
+
+    let y = 62;
+    pdvItems.forEach((item) => {
+      doc.text(`${item.name} (${item.qty}x) - R$ ${(item.price * item.qty).toFixed(2)}`, 14, y);
+      y += 8;
+    });
+
+    doc.text('------------------------------------------------------------', 14, y);
+    doc.setFontSize(12);
+    doc.text(`TOTAL PAGO: R$ ${subtotalPdv.toFixed(2)}`, 14, y + 10);
+    doc.setFontSize(9);
+    doc.text('Obrigado pela preferencia! Petia Gestao Veterinaria', 14, y + 22);
+
+    doc.save(`recibo-${pdvClient.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+  };
+
   const handleFinishSale = () => {
+    generateReceiptPDF();
     setSaleCompleted(true);
     setTimeout(() => {
       setSaleCompleted(false);
       setPdvItems([]);
-    }, 2000);
+    }, 3000);
   };
 
   const markAsPaid = (id: string) => {

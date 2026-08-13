@@ -38,6 +38,7 @@ import {
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { formatCPF, formatPhone } from '@/lib/utils';
 import { PLANS, PlanType } from '@/lib/plans';
+import { APP_VERSION } from '@/lib/version';
 
 export default function PerfilPage() {
   // Representative Profile State
@@ -143,6 +144,7 @@ export default function PerfilPage() {
           const savedUser = JSON.parse(localStorage.getItem('petia_user_profile') || '{}');
           savedUser.avatar = compressedBase64;
           localStorage.setItem('petia_user_profile', JSON.stringify(savedUser));
+          window.dispatchEvent(new Event('petia_user_profile_updated'));
           triggerToast('Foto de perfil atualizada com sucesso!');
         };
         img.src = event.target?.result as string;
@@ -156,6 +158,7 @@ export default function PerfilPage() {
     const savedUser = JSON.parse(localStorage.getItem('petia_user_profile') || '{}');
     delete savedUser.avatar;
     localStorage.setItem('petia_user_profile', JSON.stringify(savedUser));
+    window.dispatchEvent(new Event('petia_user_profile_updated'));
     triggerToast('Foto de perfil removida.');
   };
 
@@ -163,6 +166,7 @@ export default function PerfilPage() {
     e.preventDefault();
     const userProfile = { name, email, cpf, birth_date: birthDate, whatsapp, avatar: avatarPreview, role: 'owner' };
     localStorage.setItem('petia_user_profile', JSON.stringify(userProfile));
+    window.dispatchEvent(new Event('petia_user_profile_updated'));
     triggerToast('Informações pessoais atualizadas!');
   };
 
@@ -636,7 +640,7 @@ export default function PerfilPage() {
 
       {/* 6. Info do Sistema & Ecossistema Sólida Tech */}
       <div className="card p-6 rounded-2xl space-y-2 border border-st-border text-center">
-        <p className="text-xs font-bold text-st-arctic">Petia • Gestão Veterinária & Pet Shop v1.4.2</p>
+        <p className="text-xs font-bold text-st-arctic">Petia • Gestão Veterinária & Pet Shop {APP_VERSION}</p>
         <p className="text-[11px] text-st-muted">Desenvolvido com excelência por Sólida Tech © 2026</p>
         <div className="pt-2">
           <SolidaTechBadge variant="auth" />

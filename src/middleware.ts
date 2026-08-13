@@ -1,16 +1,36 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+// Routes that require an authenticated session
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/agenda',
+  '/pets',
+  '/tutores',
+  '/checkin',
+  '/services',
+  '/inventory',
+  '/subscriptions',
+  '/automations',
+  '/staff',
+  '/professionals',
+  '/financial',
+  '/boarding',
+  '/store',
+  '/planos',
+  '/perfil',
+  '/settings',
+];
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+  // Skip auth check if Supabase keys are not yet configured
   if (!supabaseUrl || !supabaseAnonKey) {
     return response;
   }
@@ -22,10 +42,10 @@ export async function middleware(request: NextRequest) {
       },
       setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({
-          request,
-        });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        );
       },
     },
   });
@@ -34,21 +54,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/agenda') ||
-    request.nextUrl.pathname.startsWith('/pets') ||
-    request.nextUrl.pathname.startsWith('/tutores') ||
-    request.nextUrl.pathname.startsWith('/checkin') ||
-    request.nextUrl.pathname.startsWith('/services') ||
-    request.nextUrl.pathname.startsWith('/inventory') ||
-    request.nextUrl.pathname.startsWith('/subscriptions') ||
-    request.nextUrl.pathname.startsWith('/automations') ||
-    request.nextUrl.pathname.startsWith('/staff') ||
-    request.nextUrl.pathname.startsWith('/professionals');
+  const { pathname } = request.nextUrl;
 
-  // Require session for protected dashboard routes if keys are active
-  if (isDashboardRoute && !user && process.env.NODE_ENV === 'production') {
-    return NextResponse.redirect(new URL('/login', request.url));
+  const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+  if (isProtected && !user) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // If authenticated and hitting /login, redirect to dashboard
+  if (user && pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;
@@ -56,6 +74,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

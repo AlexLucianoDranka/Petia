@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server';
 import { PLANS, PlanType } from '@/lib/plans';
 import { stripe } from '@/services/stripe';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: Request) {
   try {
-    const { planId, billingCycle } = (await request.json()) as {
+    const { planId, billingCycle, clinicId, userEmail } = (await request.json()) as {
       planId: PlanType;
       billingCycle: 'monthly' | 'yearly';
+      clinicId?: string;
+      userEmail?: string;
     };
 
     const plan = PLANS[planId];
@@ -14,22 +22,66 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Plano inválido' }, { status: 400 });
     }
 
-    const apiKey = process.env.STRIPE_SECRET_KEY;
-    if (!apiKey) {
+    // If Stripe keys not configured, return demo response
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_...') {
       return NextResponse.json({
         demo: true,
-        error: 'STRIPE_SECRET_KEY não configurada no .env.local',
-        plan,
+        message: 'Configure STRIPE_SECRET_KEY no .env.local para cobranças reais',
+        plan: plan.name,
       });
+    }
+
+    // Get or create Stripe customer
+    let stripeCustomerId: string | undefined;
+
+    if (clinicId) {
+      const { data: clinic } = await supabaseAdmin
+        .from('clinics')
+        .select('stripe_customer_id')
+        .eq('id', clinicId)
+        .maybeSingle();
+
+      stripeCustomerId = clinic?.stripe_customer_id || undefined;
+    }
+
+    if (!stripeCustomerId && userEmail) {
+      // Search existing customers first
+      const existing = await stripe.customers.list({ email: userEmail, limit: 1 });
+      if (existing.data.length > 0) {
+        stripeCustomerId = existing.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({ email: userEmail });
+        stripeCustomerId = customer.id;
+      }
+
+      // Save stripe_customer_id to clinic
+      if (clinicId && stripeCustomerId) {
+        await supabaseAdmin
+          .from('clinics')
+          .update({ stripe_customer_id: stripeCustomerId })
+          .eq('id', clinicId);
+      }
     }
 
     const priceAmount = Math.round(
       (billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly) * 100
     );
 
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || '';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
+      customer: stripeCustomerId,
+      customer_email: stripeCustomerId ? undefined : userEmail,
+      subscription_data: {
+        trial_period_days: 7, // 7-day free trial
+        metadata: {
+          clinic_id: clinicId || '',
+          plan_id: planId,
+          billing_cycle: billingCycle,
+        },
+      },
       line_items: [
         {
           price_data: {
@@ -37,6 +89,7 @@ export async function POST(request: Request) {
             product_data: {
               name: `Petia ${plan.name}`,
               description: plan.description,
+              images: [`${origin}/icons/petshop-icon.svg`],
             },
             unit_amount: priceAmount,
             recurring: {
@@ -46,12 +99,23 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      success_url: `${request.headers.get('origin')}/planos?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.headers.get('origin')}/planos?canceled=true`,
+      metadata: {
+        clinic_id: clinicId || '',
+        plan_id: planId,
+        billing_cycle: billingCycle,
+      },
+      allow_promotion_codes: true,
+      success_url: `${origin}/planos?success=true&session_id={CHECKOUT_SESSION_ID}&plan=${planId}`,
+      cancel_url: `${origin}/planos?canceled=true`,
+      locale: 'pt-BR',
     });
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Erro no Stripe Checkout' }, { status: 500 });
+    console.error('[StripeCheckout] Error:', err);
+    return NextResponse.json(
+      { error: err.message || 'Erro interno no Stripe Checkout' },
+      { status: 500 }
+    );
   }
 }

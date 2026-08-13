@@ -6,11 +6,9 @@ import { PwaInstallPrompt } from '@/components/navigation/PwaInstallPrompt';
 const inter = Inter({ subsets: ['latin'] });
 
 export const viewport: Viewport = {
-  themeColor: '#3b82f6',
+  themeColor: '#0f1f38',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
 };
 
@@ -20,7 +18,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'Petia',
   },
   icons: {

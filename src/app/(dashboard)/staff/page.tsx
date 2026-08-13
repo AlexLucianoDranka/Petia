@@ -5,8 +5,11 @@ import { Shield, UserPlus, Check, X, Mail, Eye, Plus, Edit2, Trash2, Lock, UserC
 import { INITIAL_STAFF } from '@/lib/mockData';
 import { StaffUser, UserRole } from '@/types/database';
 import { ALL_MENU_KEYS, getRolePresetPermissions, StaffPermissionRule, upsertStaffPermissions } from '@/lib/data/permissions';
+import { PlanGate } from '@/components/ui/PlanGate';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
 
 export default function StaffPage() {
+  const { canAddStaff } = usePlanLimits();
   const [staffList, setStaffList] = useState<StaffUser[]>(INITIAL_STAFF);
   const [selectedStaff, setSelectedStaff] = useState<StaffUser>(INITIAL_STAFF[0]);
   const [permissions, setPermissions] = useState<StaffPermissionRule[]>(
@@ -53,7 +56,7 @@ export default function StaffPage() {
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  const handleSendInvite = (e: React.FormEvent) => {
+  const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     const newStaff: StaffUser = {
       id: `u-${Date.now()}`,
@@ -63,6 +66,26 @@ export default function StaffPage() {
       role: inviteRole,
       created_at: new Date().toISOString(),
     };
+
+    // Send real email invite via Resend API
+    try {
+      const clinicData = JSON.parse(localStorage.getItem('petia_clinic_data') || '{}');
+      const appUrl = window.location.origin;
+      await fetch('/api/email/invite-staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inviteeEmail: inviteEmail,
+          inviteeName: inviteName,
+          inviterClinicName: clinicData.name || 'Petia',
+          role: inviteRole,
+          inviteLink: `${appUrl}/login?invite=true&email=${encodeURIComponent(inviteEmail)}`,
+        }),
+      });
+    } catch (_err) {
+      // email not critical — continue
+    }
+
     setStaffList([...staffList, newStaff]);
     setInviteSent(true);
     setTimeout(() => {
@@ -74,6 +97,11 @@ export default function StaffPage() {
   };
 
   return (
+    <PlanGate
+      requiredPlan="profissional"
+      featureName="Gestão de Equipe & Permissões Granulares"
+      featureDescription="Controle granular de acesso por menu para cada funcionário da sua clínica. Disponível no plano Profissional Prata ou superior."
+    >
     <div className="space-y-6 animate-fade-up w-full">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 card p-6 rounded-2xl">
@@ -194,7 +222,9 @@ export default function StaffPage() {
               <tbody className="divide-y divide-st-border/30">
                 {permissions.map((rule) => (
                   <tr key={rule.menu_key} className="hover:bg-st-surface-2/40 transition-colors">
-                    <td className="py-3 px-3 font-bold text-st-arctic uppercase">{rule.menu_key}</td>
+                    <td className="py-3 px-3 font-medium text-st-arctic text-xs">
+                      {ALL_MENU_KEYS.find(m => m.key === rule.menu_key)?.label || rule.menu_key}
+                    </td>
 
                     <td className="py-3 px-3 text-center">
                       <input
@@ -338,5 +368,6 @@ export default function StaffPage() {
         </div>
       )}
     </div>
+    </PlanGate>
   );
 }

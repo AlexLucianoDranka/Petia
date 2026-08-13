@@ -10,6 +10,7 @@ import { INITIAL_PETS, INITIAL_SERVICES } from '@/lib/mockData';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedPet, setSelectedPet] = useState(INITIAL_PETS[0].id);
   const [selectedService, setSelectedService] = useState(INITIAL_SERVICES[0].id);
   const [scheduledDate, setScheduledDate] = useState('');
@@ -28,11 +29,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-st-navy text-st-arctic flex">
-      <Sidebar />
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
-      <div className="flex-1 md:pl-64 flex flex-col min-w-0 pb-16 md:pb-0">
-        <Header onOpenQuickAppointment={() => setIsAppointmentModalOpen(true)} />
-        <main className="flex-1 p-4 lg:p-8 w-full">{children}</main>
+      <div className="flex-1 md:pl-72 flex flex-col min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
+        <Header
+          onOpenQuickAppointment={() => setIsAppointmentModalOpen(true)}
+          onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        />
+        <main className="flex-1 p-3 sm:p-4 lg:p-8 w-full">{children}</main>
       </div>
 
       <BottomNav />

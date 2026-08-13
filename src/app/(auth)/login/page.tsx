@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckSquare, Square, Building2, User, FileText, Phone, MapPin, Calendar, ArrowRight } from 'lucide-react';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { formatCPF, formatCNPJ, formatPhone } from '@/lib/utils';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -15,7 +16,7 @@ export default function LoginPage() {
 
   // Login States
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('123456');
+  const [password, setPassword] = useState('');
   const [rememberEmail, setRememberEmail] = useState(false);
 
   // Registration States (Representante + Clínica)
@@ -41,7 +42,7 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -51,12 +52,26 @@ export default function LoginPage() {
       localStorage.removeItem('petia_saved_email');
     }
 
+    // Try Supabase Auth
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const isSupabaseReal = supabaseUrl && !supabaseUrl.includes('placeholder');
+
+    if (isSupabaseReal) {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) {
+        setError(authError.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos. Verifique seus dados.'
+          : authError.message);
+        return;
+      }
+    }
+
     startTransition(() => {
       window.location.href = '/dashboard';
     });
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -65,7 +80,67 @@ export default function LoginPage() {
       return;
     }
 
-    // Save profile data for /perfil, /settings and /planos
+    if (regPassword.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const isSupabaseReal = supabaseUrl && !supabaseUrl.includes('placeholder');
+
+    if (isSupabaseReal) {
+      // 1. Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: regEmail,
+        password: regPassword,
+        options: {
+          data: { name: regName },
+        },
+      });
+
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+
+      // 2. Create clinic record
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+
+      const { data: clinicData, error: clinicError } = await supabase
+        .from('clinics')
+        .insert({
+          name: clinicName,
+          cnpj: clinicCnpj || null,
+          address: clinicAddress || null,
+          city: clinicCity || null,
+          state: clinicState || null,
+          representative_name: regName,
+          representative_cpf: regCpf || null,
+          representative_whatsapp: regWhatsapp || null,
+          plan: 'basico',
+          subscription_status: 'trial',
+          trial_ends_at: trialEndsAt.toISOString(),
+        })
+        .select('id')
+        .single();
+
+      if (!clinicError && clinicData && authData.user) {
+        // 3. Link user to clinic
+        await supabase.from('users').upsert({
+          id: authData.user.id,
+          clinic_id: clinicData.id,
+          name: regName,
+          email: regEmail,
+          cpf: regCpf || null,
+          phone: regWhatsapp || null,
+          birth_date: regBirthDate || null,
+          role: 'owner',
+        }, { onConflict: 'id' });
+      }
+    }
+
+    // Save profile data for /perfil, /settings and /planos (legacy localStorage)
     const userProfile = {
       name: regName,
       email: regEmail,
@@ -75,7 +150,7 @@ export default function LoginPage() {
       role: 'owner',
     };
 
-    const clinicData = {
+    const clinicDataLocal = {
       name: clinicName,
       cnpj: clinicCnpj,
       address: clinicAddress,
@@ -85,7 +160,16 @@ export default function LoginPage() {
     };
 
     localStorage.setItem('petia_user_profile', JSON.stringify(userProfile));
-    localStorage.setItem('petia_clinic_data', JSON.stringify(clinicData));
+    localStorage.setItem('petia_clinic_data', JSON.stringify(clinicDataLocal));
+
+    // Send welcome email via Resend
+    try {
+      await fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: regName, email: regEmail, clinicName }),
+      });
+    } catch (_) {}
 
     startTransition(() => {
       window.location.href = '/planos?new_account=true';

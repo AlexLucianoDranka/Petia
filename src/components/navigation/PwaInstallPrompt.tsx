@@ -55,7 +55,7 @@ export function PwaInstallPrompt() {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed top-4 right-4 left-4 md:left-auto md:w-96 z-50 bg-st-surface border border-st-electric/50 rounded-2xl p-4 shadow-glow animate-fade-down flex items-start gap-3">
+    <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] left-3 right-3 md:bottom-auto md:top-4 md:left-auto md:right-4 md:w-96 z-50 bg-st-surface border border-st-electric/50 rounded-2xl p-4 shadow-glow animate-fade-up md:animate-fade-down flex items-start gap-3">
       <div className="w-10 h-10 rounded-xl bg-st-electric/20 text-st-electric flex items-center justify-center shrink-0 border border-st-electric/30">
         {isIos ? <Smartphone className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
       </div>

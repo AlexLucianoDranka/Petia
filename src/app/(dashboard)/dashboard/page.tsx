@@ -21,6 +21,8 @@ import {
 } from '@/lib/mockData';
 import Link from 'next/link';
 
+import { APP_VERSION } from '@/lib/version';
+
 export default function DashboardPage() {
   const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
   const [automationLog, setAutomationLog] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function DashboardPage() {
         <div className="space-y-2 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 text-xs font-semibold whitespace-nowrap shrink-0">
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span className="whitespace-nowrap">Petia • Controle Veterinário v1.4.2</span>
+            <span className="whitespace-nowrap">Petia • Controle Veterinário {APP_VERSION}</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
             Bem-vindo, Dr. Lucas
@@ -80,6 +82,29 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Critical Stock Alert Banner */}
+      {lowStockItems.length > 0 && (
+        <div className="card p-4 rounded-xl border border-red-500/30 bg-red-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-500/20 text-red-400 shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-extrabold text-st-arctic text-sm">Alerta de Estoque Crítico ({lowStockItems.length} itens)</span>
+              <p className="text-st-muted text-[11px]">
+                {lowStockItems.map((i) => i.name).join(', ')} abaixo do limite mínimo.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/inventory"
+            className="px-3.5 py-1.5 rounded-lg bg-red-500 text-white font-bold text-xs shadow-glow hover:bg-red-600 transition-colors whitespace-nowrap shrink-0"
+          >
+            Repor Estoque
+          </Link>
+        </div>
+      )}
+
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
         <div className="card p-5 rounded-xl space-y-3">
@@ -90,9 +115,9 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">R$ 14.850,00</h3>
+            <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">R$ 18.940,00</h3>
             <p className="text-[11px] text-st-success font-semibold flex items-center gap-1 mt-0.5 whitespace-nowrap">
-              <TrendingUp className="w-3 h-3 shrink-0" /> +14.2% em relação ao mês anterior
+              <TrendingUp className="w-3 h-3 shrink-0" /> +18.4% este mês
             </p>
           </div>
         </div>
@@ -133,6 +158,67 @@ export default function DashboardPage() {
           <div>
             <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">2.1%</h3>
             <p className="text-[11px] text-st-muted font-medium mt-0.5 whitespace-nowrap">Cobranças Stripe automáticas</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Health Insights & SVG Revenue Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* SVG Revenue Chart */}
+        <div className="lg:col-span-2 card p-6 rounded-2xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-st-arctic text-sm uppercase tracking-wider">Desempenho Diário de Receita (Últimos 7 Dias)</h3>
+            <span className="text-xs text-st-electric font-bold font-mono">Média R$ 630,00/dia</span>
+          </div>
+
+          <div className="h-44 w-full flex items-end justify-between gap-2 pt-4 px-2">
+            {[
+              { day: 'Seg', val: 450, height: '45%' },
+              { day: 'Ter', val: 580, height: '58%' },
+              { day: 'Qua', val: 720, height: '72%' },
+              { day: 'Qui', val: 610, height: '61%' },
+              { day: 'Sex', val: 890, height: '89%' },
+              { day: 'Sáb', val: 950, height: '95%' },
+              { day: 'Dom', val: 210, height: '21%' },
+            ].map((item, idx) => (
+              <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                <span className="text-[10px] font-mono text-st-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                  R${item.val}
+                </span>
+                <div
+                  className="w-full bg-gradient-to-t from-st-electric/30 to-st-electric rounded-t-lg transition-all duration-300 group-hover:brightness-125"
+                  style={{ height: item.height }}
+                />
+                <span className="text-[11px] font-bold text-st-muted">{item.day}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Insights Card */}
+        <div className="card p-6 rounded-2xl space-y-3">
+          <h3 className="font-bold text-st-arctic text-sm uppercase tracking-wider border-b border-st-border/40 pb-2">
+            💡 Indicadores Operacionais
+          </h3>
+
+          <div className="space-y-3 text-xs">
+            <div className="p-3 rounded-xl bg-st-surface border border-st-border/50">
+              <span className="text-[10px] text-st-muted font-bold uppercase block">Serviço Mais Lucrativo</span>
+              <span className="font-extrabold text-st-arctic text-sm block">Banho & Tosa Completo</span>
+              <span className="text-[11px] text-st-electric font-semibold">R$ 6.840,00 gerados (36%)</span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-st-surface border border-st-border/50">
+              <span className="text-[10px] text-st-muted font-bold uppercase block">Horário de Pico da Clínica</span>
+              <span className="font-extrabold text-st-arctic text-sm block">14:00 às 16:30</span>
+              <span className="text-[11px] text-st-muted font-medium">62% dos agendamentos diários</span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-st-surface border border-st-border/50">
+              <span className="text-[10px] text-st-muted font-bold uppercase block">Profissional Destaque</span>
+              <span className="font-extrabold text-st-arctic text-sm block">Dr. Lucas Mendes</span>
+              <span className="text-[11px] text-st-success font-semibold">18 consultas concluídas</span>
+            </div>
           </div>
         </div>
       </div>
