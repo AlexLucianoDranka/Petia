@@ -30,6 +30,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     badge: 'Super Acessível',
     priceMonthly: 4.99,
     priceYearly: 49.90,
+    stripePriceIdMonthly: process.env.STRIPE_PRICE_BASICO_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PRICE_BASICO_YEARLY,
     description: 'Ideal para profissionais autônomos ou clínicas iniciando a digitalização.',
     limits: {
       maxPets: 20,
@@ -54,6 +56,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     name: 'Essencial Bronze',
     priceMonthly: 29.90,
     priceYearly: 299.00,
+    stripePriceIdMonthly: process.env.STRIPE_PRICE_ESSENCIAL_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PRICE_ESSENCIAL_YEARLY,
     description: 'Para pequenas clínicas e pet shops com fluxo diário constante.',
     limits: {
       maxPets: 100,
@@ -79,6 +83,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     name: 'Profissional Prata',
     priceMonthly: 59.90,
     priceYearly: 599.00,
+    stripePriceIdMonthly: process.env.STRIPE_PRICE_PROFISSIONAL_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PRICE_PROFISSIONAL_YEARLY,
     description: 'Para clínicas estruturadas que buscam automação e controle financeiro.',
     limits: {
       maxPets: 300,
@@ -106,6 +112,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     badge: 'Mais Vendido',
     priceMonthly: 99.90,
     priceYearly: 999.00,
+    stripePriceIdMonthly: process.env.STRIPE_PRICE_OURO_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PRICE_OURO_YEARLY,
     description: 'Solução completa para clínicas de médio porte sem limitação de pets.',
     limits: {
       maxPets: 'ilimitado',
@@ -131,6 +139,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     name: 'Empresarial Platina',
     priceMonthly: 149.90,
     priceYearly: 1499.00,
+    stripePriceIdMonthly: process.env.STRIPE_PRICE_PLATINA_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PRICE_PLATINA_YEARLY,
     description: 'Para hospitais veterinários e centros estéticos de grande escala.',
     limits: {
       maxPets: 'ilimitado',
@@ -157,6 +167,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     badge: 'Enterprise',
     priceMonthly: 299.90,
     priceYearly: 2999.00,
+    stripePriceIdMonthly: process.env.STRIPE_PRICE_DIAMOND_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PRICE_DIAMOND_YEARLY,
     description: 'Gestão multi-unidades para redes de clínicas, pet shops e franquias.',
     limits: {
       maxPets: 'ilimitado',

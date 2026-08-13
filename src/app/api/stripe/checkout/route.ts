@@ -63,26 +63,27 @@ export async function POST(request: Request) {
       }
     }
 
-    const priceAmount = Math.round(
-      (billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly) * 100
-    );
-
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || '';
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
-      customer: stripeCustomerId,
-      customer_email: stripeCustomerId ? undefined : userEmail,
-      subscription_data: {
-        trial_period_days: 7, // 7-day free trial
-        metadata: {
-          clinic_id: clinicId || '',
-          plan_id: planId,
-          billing_cycle: billingCycle,
+    // Check if Catalog Price ID is configured in env
+    const catalogPriceId = billingCycle === 'yearly' ? plan.stripePriceIdYearly : plan.stripePriceIdMonthly;
+
+    let lineItems: any[];
+
+    if (catalogPriceId) {
+      // Use Catalog Price ID from Stripe Dashboard
+      lineItems = [
+        {
+          price: catalogPriceId,
+          quantity: 1,
         },
-      },
-      line_items: [
+      ];
+    } else {
+      // Fallback: Dynamic Price Data
+      const priceAmount = Math.round(
+        (billingCycle === 'yearly' ? plan.priceYearly : plan.priceMonthly) * 100
+      );
+      lineItems = [
         {
           price_data: {
             currency: 'brl',
@@ -98,7 +99,23 @@ export async function POST(request: Request) {
           },
           quantity: 1,
         },
-      ],
+      ];
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      customer: stripeCustomerId,
+      customer_email: stripeCustomerId ? undefined : userEmail,
+      subscription_data: {
+        trial_period_days: 7, // 7-day free trial
+        metadata: {
+          clinic_id: clinicId || '',
+          plan_id: planId,
+          billing_cycle: billingCycle,
+        },
+      },
+      line_items: lineItems,
       metadata: {
         clinic_id: clinicId || '',
         plan_id: planId,

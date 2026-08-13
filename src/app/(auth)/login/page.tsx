@@ -480,12 +480,6 @@ export default function LoginPage() {
             </form>
           )}
 
-          <p className="text-center text-st-muted text-xs mt-4">
-            Ainda não tem conta?{' '}
-            <Link href="/dashboard" className="text-st-electric hover:text-st-ice transition-colors font-medium whitespace-nowrap">
-              Acessar Demonstração
-            </Link>
-          </p>
 
           <div className="flex items-center justify-center gap-3 text-[11px] text-st-muted/80 mt-4 pt-3 border-t border-st-border/30">
             <Link href="/termos" className="hover:text-st-arctic transition-colors whitespace-nowrap">
