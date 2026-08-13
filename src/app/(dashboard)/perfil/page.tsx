@@ -102,6 +102,13 @@ export default function PerfilPage() {
         if (parsedClinic.plan) setPlanType(parsedClinic.plan as PlanType);
       } catch (e) {}
     }
+
+    const savedPrefs = localStorage.getItem('petia_email_prefs');
+    if (savedPrefs) {
+      try {
+        setEmailPrefs(JSON.parse(savedPrefs));
+      } catch (e) {}
+    }
   }, []);
 
   const triggerToast = (msg: string) => {
@@ -198,7 +205,9 @@ export default function PerfilPage() {
   const toggleEmailPref = (key: keyof typeof emailPrefs) => {
     const updated = { ...emailPrefs, [key]: !emailPrefs[key] };
     setEmailPrefs(updated);
-    triggerToast('Preferências de e-mail salvas!');
+    localStorage.setItem('petia_email_prefs', JSON.stringify(updated));
+    window.dispatchEvent(new Event('petia_email_prefs_updated'));
+    triggerToast(`Notificação de ${key} ${updated[key] ? 'ativada' : 'desativada'} com sucesso!`);
   };
 
   const handleExportData = () => {

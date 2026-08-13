@@ -54,18 +54,23 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const hasFallbackSession =
+    request.cookies.has('petia_session') ||
+    request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
+
+  const isAuthenticated = !!user || hasFallbackSession;
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-  if (isProtected && !user) {
+  if (isProtected && !isAuthenticated) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // If authenticated and hitting /login, redirect to dashboard
-  if (user && pathname === '/login') {
+  if (isAuthenticated && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

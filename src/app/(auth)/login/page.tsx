@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckSquare, Square, Building2, User, FileText, Phone, MapPin, Calendar, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckSquare, Square, Building2, User, FileText, Phone, MapPin, Calendar, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { formatCPF, formatCNPJ, formatPhone } from '@/lib/utils';
 import { supabase } from '@/lib/supabaseClient';
@@ -33,6 +33,10 @@ export default function LoginPage() {
   const [clinicCity, setClinicCity] = useState('');
   const [clinicState, setClinicState] = useState('');
 
+  // Email Confirmation Screen State
+  const [isEmailConfirmationScreen, setIsEmailConfirmationScreen] = useState(false);
+  const [confirmedEmailSent, setConfirmedEmailSent] = useState('');
+
   useEffect(() => {
     const saved = localStorage.getItem('petia_saved_email');
     if (saved) {
@@ -59,11 +63,24 @@ export default function LoginPage() {
     if (isSupabaseReal) {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) {
-        setError(authError.message === 'Invalid login credentials'
-          ? 'E-mail ou senha incorretos. Verifique seus dados.'
-          : authError.message);
+        if (authError.message.toLowerCase().includes('email not confirmed')) {
+          setError('Seu e-mail ainda não foi confirmado. Acesse sua caixa de entrada e clique no link de ativação.');
+        } else if (authError.message === 'Invalid login credentials') {
+          setError('E-mail ou senha incorretos. Verifique seus dados.');
+        } else {
+          setError(authError.message);
+        }
         return;
       }
+    }
+
+    // Set browser session cookie so middleware grants access to protected routes
+    document.cookie = 'petia_session=true; path=/; max-age=86400; SameSite=Lax';
+
+    // Save profile for local state
+    const userProfile = JSON.parse(localStorage.getItem('petia_user_profile') || '{}');
+    if (!userProfile.email && email) {
+      localStorage.setItem('petia_user_profile', JSON.stringify({ email, name: email.split('@')[0], role: 'owner' }));
     }
 
     startTransition(() => {
@@ -171,9 +188,8 @@ export default function LoginPage() {
       });
     } catch (_) {}
 
-    startTransition(() => {
-      window.location.href = '/planos?new_account=true';
-    });
+    setConfirmedEmailSent(regEmail);
+    setIsEmailConfirmationScreen(true);
   };
 
   return (
@@ -232,20 +248,62 @@ export default function LoginPage() {
 
         {/* Auth Form Card com Bordas KmZero */}
         <div className="card p-6 rounded-2xl border border-st-border shadow-2xl space-y-4">
-          <h2 className="text-lg font-semibold text-st-arctic">
-            {mode === 'login' ? 'Entrar na conta' : 'Criar conta da clínica'}
-          </h2>
+          {isEmailConfirmationScreen ? (
+            <div className="py-4 text-center space-y-5 animate-fade-in">
+              <div className="w-16 h-16 rounded-2xl bg-st-electric/15 border border-st-electric/30 text-st-electric flex items-center justify-center mx-auto shadow-glow">
+                <CheckCircle2 className="w-9 h-9 text-st-electric" />
+              </div>
 
-          {error && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2.5 text-sm text-red-400 animate-fade-in">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error}
+              <div className="space-y-1.5">
+                <h3 className="text-xl font-extrabold text-white">Conta Criada com Sucesso! 📩</h3>
+                <p className="text-xs text-st-muted leading-relaxed max-w-sm mx-auto">
+                  Enviamos um e-mail de confirmação para <strong className="text-st-arctic font-semibold">{confirmedEmailSent}</strong>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs text-st-muted leading-relaxed text-left space-y-2">
+                <p className="font-semibold text-st-arctic flex items-center gap-1.5">
+                  <Mail className="w-4 h-4 text-st-electric shrink-0" />
+                  <span>Confirme seu e-mail para ter acesso:</span>
+                </p>
+                <p>
+                  Acesse sua caixa de entrada e clique no link de confirmação para ativar sua conta e liberar seu acesso ao sistema.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail(confirmedEmailSent);
+                  setMode('login');
+                  setIsEmailConfirmationScreen(false);
+                }}
+                className="w-full py-3 rounded-lg font-semibold text-sm text-white transition-all duration-200 mt-2 flex items-center justify-center gap-2 border-none shadow-glow"
+                style={{
+                  background: 'linear-gradient(135deg, #2B5BAA, #3B82F6)',
+                  boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
+                }}
+              >
+                <span>Ir para a Tela de Login</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </button>
             </div>
-          )}
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold text-st-arctic">
+                {mode === 'login' ? 'Entrar na conta' : 'Criar conta da clínica'}
+              </h2>
 
-          {mode === 'login' ? (
-            /* Login Form */
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              {error && (
+                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2.5 text-sm text-red-400 animate-fade-in">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              {mode === 'login' ? (
+                /* Login Form */
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-xs font-medium text-st-muted mb-1.5 uppercase tracking-wide">
                   E-mail
@@ -474,10 +532,12 @@ export default function LoginPage() {
                   boxShadow: '0 4px 15px rgba(59,130,246,0.3)',
                 }}
               >
-                <span>Criar Conta & Escolher Plano</span>
+                <span>Criar Conta</span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
             </form>
+          )}
+          </>
           )}
 
 
