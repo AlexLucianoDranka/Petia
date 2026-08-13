@@ -22,12 +22,41 @@ import {
 import Link from 'next/link';
 
 import { APP_VERSION } from '@/lib/version';
+import { OnboardingTour } from '@/components/navigation/OnboardingTour';
+import { getScopedData, getCurrentClinicScope } from '@/lib/data/clinicDataScope';
 
 export default function DashboardPage() {
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
+  const [appointments, setAppointments] = useState(() =>
+    getScopedData('petia_appointments', INITIAL_APPOINTMENTS)
+  );
+  const [inventory, setInventory] = useState(() =>
+    getScopedData('petia_inventory', INITIAL_INVENTORY)
+  );
   const [automationLog, setAutomationLog] = useState<string | null>(null);
+  const [userName, setUserName] = useState('');
+  const [scope, setScope] = useState(() => getCurrentClinicScope());
 
-  const lowStockItems = INITIAL_INVENTORY.filter((item) => item.quantity <= item.min_quantity);
+  React.useEffect(() => {
+    const loadUserData = () => {
+      const savedUser = localStorage.getItem('petia_user_profile');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          if (parsed.name) {
+            setUserName(parsed.name);
+          } else if (parsed.email) {
+            setUserName(parsed.email.split('@')[0]);
+          }
+        } catch (e) {}
+      }
+      setScope(getCurrentClinicScope());
+    };
+    loadUserData();
+    window.addEventListener('petia_user_profile_updated', loadUserData);
+    return () => window.removeEventListener('petia_user_profile_updated', loadUserData);
+  }, []);
+
+  const lowStockItems = inventory.filter((item) => item.quantity <= item.min_quantity);
 
   const handleUpdateStatus = (id: string, newStatus: any) => {
     setAppointments((prev) =>
@@ -42,6 +71,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-fade-up w-full">
+      {/* Interactive Welcome Tour for New Accounts */}
+      <OnboardingTour />
       {/* Top Banner */}
       <div className="card p-6 lg:p-8 rounded-2xl relative overflow-hidden bg-gradient-to-r from-st-navy via-st-surface to-st-deep border border-st-border shadow-md w-full">
         <div className="space-y-2 relative z-10">
@@ -50,10 +81,18 @@ export default function DashboardPage() {
             <span className="whitespace-nowrap">Petia • Controle Veterinário {APP_VERSION}</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-            Bem-vindo, Dr. Lucas
+            Bem-vindo, {userName || 'Usuário'}
           </h1>
           <p className="text-st-muted text-xs lg:text-sm max-w-xl">
-            Sua clínica possui <span className="text-st-electric font-bold">4 agendamentos para hoje</span> e 2 alertas automáticos de vacina prontos para envio.
+            {appointments.length > 0 ? (
+              <>
+                Sua clínica possui <span className="text-st-electric font-bold">{appointments.length} agendamento{appointments.length > 1 ? 's' : ''} para hoje</span>.
+              </>
+            ) : (
+              <>
+                Sua clínica está configurada e pronta para uso. <span className="text-st-electric font-bold">Nenhum agendamento marcado para hoje</span>. Crie seu primeiro atendimento!
+              </>
+            )}
           </p>
         </div>
 

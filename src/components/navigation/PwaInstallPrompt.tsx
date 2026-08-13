@@ -9,6 +9,12 @@ export function PwaInstallPrompt() {
   const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
+    // Check if user already dismissed or installed before
+    const isDismissed = localStorage.getItem('petia_pwa_dismissed');
+    if (isDismissed === 'true') {
+      return;
+    }
+
     // Register Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
@@ -20,7 +26,9 @@ export function PwaInstallPrompt() {
     // Detect iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     const iosDevice = /iphone|ipad|ipod/.test(userAgent);
-    const standalone = (window.navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    const standalone =
+      (window.navigator as any).standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches;
 
     if (iosDevice && !standalone) {
       setIsIos(true);
@@ -41,12 +49,18 @@ export function PwaInstallPrompt() {
     };
   }, []);
 
+  const handleDismiss = () => {
+    localStorage.setItem('petia_pwa_dismissed', 'true');
+    setShowPrompt(false);
+  };
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       console.log('[PWA] Usuário aceitou instalar o Petia');
+      localStorage.setItem('petia_pwa_dismissed', 'true');
     }
     setDeferredPrompt(null);
     setShowPrompt(false);
@@ -71,7 +85,7 @@ export function PwaInstallPrompt() {
         {!isIos && deferredPrompt && (
           <button
             onClick={handleInstallClick}
-            className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-st-electric hover:bg-st-steel text-white font-bold text-xs shadow-glow transition-all whitespace-nowrap shrink-0"
+            className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-st-electric hover:bg-st-steel text-white font-bold text-xs shadow-glow transition-all whitespace-nowrap shrink-0 border-none"
           >
             <Download className="w-4 h-4 shrink-0" />
             <span>Instalar Petia Agora</span>
@@ -80,8 +94,9 @@ export function PwaInstallPrompt() {
       </div>
 
       <button
-        onClick={() => setShowPrompt(false)}
+        onClick={handleDismiss}
         className="p-1 rounded-lg text-st-muted hover:text-st-arctic hover:bg-st-surface-2 transition-colors shrink-0"
+        title="Fechar aviso"
       >
         <X className="w-4 h-4" />
       </button>

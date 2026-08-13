@@ -5,8 +5,10 @@ import { Users, Plus, Search, Phone, Mail, MapPin, Dog, MessageSquare, ChevronRi
 import { INITIAL_CUSTOMERS } from '@/lib/mockData';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
+import { getScopedData } from '@/lib/data/clinicDataScope';
+
 export default function TutoresPage() {
-  const [tutores] = useState(INITIAL_CUSTOMERS);
+  const [tutores] = useState(() => getScopedData('petia_customers', INITIAL_CUSTOMERS));
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTutores = tutores.filter(

@@ -32,11 +32,15 @@ const HEATMAP_DATA = [
   { time: '18:00', Seg: 2, Ter: 2, Qua: 3, Qui: 2, Sex: 4, Sab: 3, Dom: 0 },
 ];
 
+import { getScopedData } from '@/lib/data/clinicDataScope';
+
 export default function AgendaPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'heatmap'>('day');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [staffFilter, setStaffFilter] = useState<string>('all');
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
+  const [appointments, setAppointments] = useState(() =>
+    getScopedData('petia_appointments', INITIAL_APPOINTMENTS)
+  );
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
   const filteredAppointments = appointments.filter((apt) => {

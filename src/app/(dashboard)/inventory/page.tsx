@@ -6,8 +6,10 @@ import { INITIAL_INVENTORY } from '@/lib/mockData';
 import { formatCurrency } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
+import { getScopedData } from '@/lib/data/clinicDataScope';
+
 export default function InventoryPage() {
-  const [inventory] = useState(INITIAL_INVENTORY);
+  const [inventory] = useState(() => getScopedData('petia_inventory', INITIAL_INVENTORY));
   const [searchTerm, setSearchTerm] = useState('');
 
   const filtered = inventory.filter(

@@ -59,8 +59,10 @@ const INITIAL_EXAMS: ExamItem[] = [
   },
 ];
 
+import { getScopedData } from '@/lib/data/clinicDataScope';
+
 export default function PetsPage() {
-  const [pets, setPets] = useState(INITIAL_PETS);
+  const [pets, setPets] = useState(() => getScopedData('petia_pets', INITIAL_PETS));
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [medicalRecords, setMedicalRecords] = useState(INITIAL_MEDICAL_RECORDS);
