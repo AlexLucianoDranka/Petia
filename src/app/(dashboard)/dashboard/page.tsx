@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { APP_VERSION } from '@/lib/version';
 import { OnboardingTour } from '@/components/navigation/OnboardingTour';
 import { getScopedData, getCurrentClinicScope } from '@/lib/data/clinicDataScope';
+import { showToast, startTopLoader, stopTopLoader } from '@/components/ui/GlobalToastAndLoader';
 
 export default function DashboardPage() {
   const [appointments, setAppointments] = useState(() =>
@@ -98,8 +99,13 @@ export default function DashboardPage() {
 
         <div className="flex flex-wrap items-center gap-3 mt-4 relative z-10">
           <button
-            onClick={handleRunAutomations}
-            className="flex items-center gap-2 bg-st-electric hover:bg-st-steel text-white font-semibold text-xs lg:text-sm px-4 py-2.5 rounded-xl shadow-glow transition-all active:scale-95 whitespace-nowrap shrink-0"
+            onClick={() => {
+              startTopLoader();
+              handleRunAutomations();
+              showToast('Lembretes de vacina via WhatsApp disparados com sucesso!', 'success');
+              setTimeout(() => stopTopLoader(), 500);
+            }}
+            className="flex items-center gap-2 bg-st-electric hover:bg-st-steel text-white font-semibold text-xs lg:text-sm px-4 py-2.5 rounded-xl shadow-glow transition-all active:scale-95 whitespace-nowrap shrink-0 border-none"
           >
             <Zap className="w-4 h-4 text-amber-300 shrink-0" />
             <span className="whitespace-nowrap">Disparar Automações</span>
@@ -114,23 +120,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {automationLog && (
-        <div className="p-4 rounded-xl bg-st-success/15 border border-st-success/30 text-st-success text-xs lg:text-sm font-semibold flex items-center gap-2 animate-fade-in whitespace-nowrap">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span className="whitespace-nowrap">{automationLog}</span>
-        </div>
-      )}
-
       {/* Critical Stock Alert Banner */}
       {lowStockItems.length > 0 && (
         <div className="card p-4 rounded-xl border border-red-500/30 bg-red-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-fade-in">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="p-2 rounded-lg bg-red-500/20 text-red-400 shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
-            <div>
-              <span className="font-extrabold text-st-arctic text-sm">Alerta de Estoque Crítico ({lowStockItems.length} itens)</span>
-              <p className="text-st-muted text-[11px]">
+            <div className="min-w-0">
+              <span className="font-extrabold text-st-arctic text-sm block truncate">Alerta de Estoque Crítico ({lowStockItems.length} itens)</span>
+              <p className="text-st-muted text-[11px] truncate">
                 {lowStockItems.map((i) => i.name).join(', ')} abaixo do limite mínimo.
               </p>
             </div>
@@ -144,59 +143,59 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-        <div className="card p-5 rounded-xl space-y-3">
-          <div className="flex items-center justify-between text-st-muted">
-            <span className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Faturamento Mês</span>
+      {/* Metric Cards Grid - Fully Responsive Mobile Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+        <div className="card p-4 sm:p-5 rounded-xl space-y-3 min-w-0">
+          <div className="flex items-center justify-between text-st-muted gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider truncate">Faturamento Mês</span>
             <div className="w-8 h-8 rounded-xl bg-st-success/20 text-st-success flex items-center justify-center font-bold shrink-0">
               R$
             </div>
           </div>
-          <div>
-            <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">R$ 18.940,00</h3>
-            <p className="text-[11px] text-st-success font-semibold flex items-center gap-1 mt-0.5 whitespace-nowrap">
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-st-arctic truncate">R$ 18.940,00</h3>
+            <p className="text-[11px] text-st-success font-semibold flex items-center gap-1 mt-0.5 truncate">
               <TrendingUp className="w-3 h-3 shrink-0" /> +18.4% este mês
             </p>
           </div>
         </div>
 
-        <div className="card p-5 rounded-xl space-y-3">
-          <div className="flex items-center justify-between text-st-muted">
-            <span className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Atendimentos</span>
+        <div className="card p-4 sm:p-5 rounded-xl space-y-3 min-w-0">
+          <div className="flex items-center justify-between text-st-muted gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider truncate">Atendimentos</span>
             <div className="w-8 h-8 rounded-xl bg-st-electric/20 text-st-electric flex items-center justify-center shrink-0">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div>
-            <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">142</h3>
-            <p className="text-[11px] text-st-muted font-medium mt-0.5 whitespace-nowrap">94% de presença confirmada</p>
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-st-arctic truncate">142</h3>
+            <p className="text-[11px] text-st-muted font-medium mt-0.5 truncate">94% de presença confirmada</p>
           </div>
         </div>
 
-        <div className="card p-5 rounded-xl space-y-3">
-          <div className="flex items-center justify-between text-st-muted">
-            <span className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Taxa de Retorno</span>
+        <div className="card p-4 sm:p-5 rounded-xl space-y-3 min-w-0">
+          <div className="flex items-center justify-between text-st-muted gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider truncate">Taxa de Retorno</span>
             <div className="w-8 h-8 rounded-xl bg-st-electric/20 text-st-electric flex items-center justify-center shrink-0">
               <Dog className="w-4 h-4" />
             </div>
           </div>
-          <div>
-            <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">87.5%</h3>
-            <p className="text-[11px] text-st-electric font-medium mt-0.5 whitespace-nowrap">Tutores recorrentes ativos</p>
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-st-arctic truncate">87.5%</h3>
+            <p className="text-[11px] text-st-electric font-medium mt-0.5 truncate">Tutores recorrentes ativos</p>
           </div>
         </div>
 
-        <div className="card p-5 rounded-xl space-y-3">
-          <div className="flex items-center justify-between text-st-muted">
-            <span className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap">Inadimplência</span>
+        <div className="card p-4 sm:p-5 rounded-xl space-y-3 min-w-0">
+          <div className="flex items-center justify-between text-st-muted gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider truncate">Inadimplência</span>
             <div className="w-8 h-8 rounded-xl bg-st-danger/20 text-st-danger flex items-center justify-center shrink-0">
               <ShieldAlert className="w-4 h-4" />
             </div>
           </div>
-          <div>
-            <h3 className="text-xl lg:text-2xl font-extrabold text-st-arctic whitespace-nowrap">2.1%</h3>
-            <p className="text-[11px] text-st-muted font-medium mt-0.5 whitespace-nowrap">Cobranças Stripe automáticas</p>
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-st-arctic truncate">2.1%</h3>
+            <p className="text-[11px] text-st-muted font-medium mt-0.5 truncate">Cobranças Stripe automáticas</p>
           </div>
         </div>
       </div>

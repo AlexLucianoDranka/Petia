@@ -2,11 +2,16 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { PwaInstallPrompt } from '@/components/navigation/PwaInstallPrompt';
+import { GlobalToastAndLoader } from '@/components/ui/GlobalToastAndLoader';
+import { ThemeManager } from '@/components/navigation/ThemeManager';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const viewport: Viewport = {
-  themeColor: '#0f1f38',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F8FAFC' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F1F38' },
+  ],
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -42,7 +47,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="h-full">
       <body className={`${inter.className} min-h-screen bg-st-navy text-st-arctic antialiased selection:bg-st-electric selection:text-white`}>
+        <ThemeManager />
         <PwaInstallPrompt />
+        <GlobalToastAndLoader />
         {children}
       </body>
     </html>

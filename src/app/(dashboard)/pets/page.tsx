@@ -27,6 +27,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { INITIAL_PETS, INITIAL_MEDICAL_RECORDS } from '@/lib/mockData';
 import { Pet, PetMedicalRecord } from '@/types/database';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
+import { showToast, startTopLoader, stopTopLoader } from '@/components/ui/GlobalToastAndLoader';
 
 interface ExamItem {
   id: string;
@@ -105,23 +106,27 @@ export default function PetsPage() {
   const handleAddMedicalRecord = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPet) return;
+    startTopLoader();
 
     const newRecord: PetMedicalRecord = {
       id: `med-${Date.now()}`,
       pet_id: selectedPet.id,
+      date: recordDate,
       type: recordType,
       description: recordDesc,
-      date: recordDate,
+      vet_name: 'Equipe Veterinária',
       next_due_date: recordNextDate || undefined,
-      vet_id: 'u1',
-      vet_name: 'Dr. Lucas Mendes',
       created_at: new Date().toISOString(),
     };
 
-    setMedicalRecords([newRecord, ...medicalRecords]);
+    setMedicalRecords((prev) => [newRecord, ...prev]);
     setIsAddRecordModalOpen(false);
     setRecordDesc('');
     setRecordNextDate('');
+    setTimeout(() => {
+      stopTopLoader();
+      showToast('Prontuário médico salvo com sucesso!', 'success');
+    }, 400);
   };
 
   // Canvas Drawing Handlers

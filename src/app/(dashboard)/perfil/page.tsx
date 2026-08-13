@@ -39,6 +39,7 @@ import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { formatCPF, formatPhone } from '@/lib/utils';
 import { PLANS, PlanType } from '@/lib/plans';
 import { APP_VERSION } from '@/lib/version';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function PerfilPage() {
   // Representative Profile State
@@ -658,13 +659,13 @@ export default function PerfilPage() {
 
       {/* Modal Confirm Account Deletion */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card rounded-2xl max-w-md w-full p-6 space-y-4 border border-red-500/40">
+        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="card rounded-2xl max-w-md w-full p-6 space-y-4 border border-red-500/40 shadow-2xl relative my-auto bg-st-surface animate-fade-in">
             <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
               <h3 className="font-bold text-red-400 text-base flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 shrink-0" /> Confirmar Exclusão de Conta
               </h3>
-              <button onClick={() => setShowDeleteModal(false)} className="text-st-muted hover:text-st-arctic">
+              <button onClick={() => setShowDeleteModal(false)} className="text-st-muted hover:text-st-arctic p-1">
                 ✕
               </button>
             </div>
@@ -679,23 +680,30 @@ export default function PerfilPage() {
               placeholder="Digite EXCLUIR"
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-mono text-xs uppercase"
+              className="w-full p-3 rounded-xl bg-st-navy border border-st-border text-st-arctic font-mono text-xs uppercase"
             />
 
             <div className="pt-2 flex justify-end gap-2 text-xs">
               <button
+                type="button"
                 onClick={() => setShowDeleteModal(false)}
                 className="px-4 py-2.5 rounded-xl border border-st-border text-st-muted font-bold whitespace-nowrap"
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 disabled={deleteConfirmText.trim().toUpperCase() !== 'EXCLUIR'}
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    await supabase.auth.signOut();
+                  } catch (e) {}
                   localStorage.clear();
+                  sessionStorage.clear();
+                  document.cookie = 'petia_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
                   window.location.href = '/login';
                 }}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold disabled:opacity-40 whitespace-nowrap border-none"
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold disabled:opacity-40 whitespace-nowrap border-none shadow-glow"
               >
                 Excluir Definitivamente
               </button>

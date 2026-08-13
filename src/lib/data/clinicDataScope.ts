@@ -1,7 +1,7 @@
 /**
  * Multi-Tenant Data Scope & Isolation Helper for Petia SaaS
- * Ensures newly registered clinics start with 100% clean, empty data (0 appointments, 0 pets, 0 stock alerts),
- * and only loads mock data if explicitly in Demo Mode (clinic_id === 'c101').
+ * Ensures EVERY clinic (new, existing, or after account deletion) starts with 100% clean, empty data (0 appointments, 0 pets, 0 stock alerts),
+ * and completely eliminates any fallback demo data.
  */
 
 export interface ClinicScopeInfo {
@@ -13,41 +13,43 @@ export interface ClinicScopeInfo {
 
 export function getCurrentClinicScope(): ClinicScopeInfo {
   if (typeof window === 'undefined') {
-    return { clinicId: 'c101', clinicName: 'Petia Demo', isDemo: true, isNew: false };
+    return { clinicId: 'real-clinic', clinicName: 'Sua Clínica', isDemo: false, isNew: true };
   }
 
   const savedClinic = localStorage.getItem('petia_clinic_data');
-  const isNewAccount = localStorage.getItem('petia_is_new_account') === 'true';
 
   if (savedClinic) {
     try {
       const parsed = JSON.parse(savedClinic);
-      const clinicId = parsed.id || 'real-clinic';
-      const isDemo = clinicId === 'c101' && !isNewAccount && !parsed.is_new;
-
       return {
-        clinicId,
+        clinicId: parsed.id || 'real-clinic',
         clinicName: parsed.name || 'Sua Clínica',
-        isDemo,
-        isNew: isNewAccount || !!parsed.is_new || !isDemo,
+        isDemo: false,
+        isNew: !!parsed.is_new,
       };
     } catch (e) {}
   }
 
-  // If user registered or logged in with real account, return clean scope
   const savedUser = localStorage.getItem('petia_user_profile');
   if (savedUser) {
-    return { clinicId: 'real-clinic', clinicName: 'Sua Clínica', isDemo: false, isNew: true };
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      return {
+        clinicId: 'real-clinic',
+        clinicName: parsedUser.clinicName || 'Sua Clínica',
+        isDemo: false,
+        isNew: true,
+      };
+    } catch (e) {}
   }
 
-  // Fallback default
-  return { clinicId: 'c101', clinicName: 'Petia Demo', isDemo: true, isNew: false };
+  // Fallback: Always clean real clinic scope, NEVER demo mode!
+  return { clinicId: 'real-clinic', clinicName: 'Sua Clínica', isDemo: false, isNew: true };
 }
 
-export function getScopedData<T>(storageKey: string, demoFallbackData: T[]): T[] {
-  if (typeof window === 'undefined') return demoFallbackData;
+export function getScopedData<T>(storageKey: string, _demoFallbackData: T[] = []): T[] {
+  if (typeof window === 'undefined') return [];
 
-  const scope = getCurrentClinicScope();
   const saved = localStorage.getItem(storageKey);
 
   if (saved) {
@@ -57,11 +59,6 @@ export function getScopedData<T>(storageKey: string, demoFallbackData: T[]): T[]
     } catch (e) {}
   }
 
-  // If real/new clinic and no custom data saved yet, return empty list (100% clean state)
-  if (!scope.isDemo) {
-    return [];
-  }
-
-  // If demo mode, return mock data
-  return demoFallbackData;
+  // Always return 100% clean empty state for any clinic with no custom data saved yet
+  return [];
 }

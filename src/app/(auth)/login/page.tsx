@@ -216,7 +216,7 @@ export default function LoginPage() {
               className="w-20 h-20 rounded-2xl shadow-glow object-contain"
             />
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Petia</h1>
+          <h1 className="text-3xl font-extrabold text-st-arctic tracking-tight">Petia</h1>
           <p className="text-st-muted text-sm mt-1 font-medium">Gestão veterinária inteligente</p>
 
           {/* Mode Switcher Tabs */}
@@ -255,7 +255,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="text-xl font-extrabold text-white">Conta Criada com Sucesso! 📩</h3>
+                <h3 className="text-xl font-extrabold text-st-arctic">Conta Criada com Sucesso! 📩</h3>
                 <p className="text-xs text-st-muted leading-relaxed max-w-sm mx-auto">
                   Enviamos um e-mail de confirmação para <strong className="text-st-arctic font-semibold">{confirmedEmailSent}</strong>.
                 </p>
