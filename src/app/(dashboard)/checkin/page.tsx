@@ -4,28 +4,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, DollarSign, Printer, Mail, Clock, Dog } from 'lucide-react';
 
 export default function CheckinPage() {
-  const [activeQueue, setActiveQueue] = useState([
-    {
-      id: 'chk-1',
-      petName: 'Thor (Golden)',
-      tutorName: 'Mariana Silva Santos',
-      tutorPhone: '(11) 99123-4567',
-      service: 'Banho & Tosa Completa',
-      price: 130.0,
-      status: 'in_progress',
-      checkinTime: '10:15',
-    },
-    {
-      id: 'chk-2',
-      petName: 'Mel (Shih Tzu)',
-      tutorName: 'Fernanda Lima Castro',
-      tutorPhone: '(11) 97766-5544',
-      service: 'Banho Higiênico',
-      price: 75.0,
-      status: 'ready_for_checkout',
-      checkinTime: '09:30',
-    },
-  ]);
+  const [activeQueue, setActiveQueue] = useState<any[]>([]);
 
   const [completedInvoice, setCompletedInvoice] = useState<any>(null);
 

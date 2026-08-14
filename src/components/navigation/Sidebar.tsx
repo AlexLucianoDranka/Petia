@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { supabase } from '@/lib/supabaseClient';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { usePermissions } from '@/hooks/usePermissions';
 import { cn } from '@/lib/utils';
@@ -62,7 +63,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const [userName, setUserName] = useState('Dr. Lucas Mendes');
+  const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const { isHidden, canView } = usePermissions();
 
@@ -201,13 +202,22 @@ export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
                 <span className="text-[10px] text-st-muted">Proprietário</span>
               </div>
             </Link>
-            <Link
-              href="/login"
-              className="p-1.5 text-st-muted hover:text-red-400 rounded-none hover:bg-red-500/10 transition-colors whitespace-nowrap shrink-0"
+            <button
+              onClick={async () => {
+                try { await supabase.auth.signOut(); } catch (_) {}
+                localStorage.clear();
+                sessionStorage.clear();
+                // Clear all cookies
+                document.cookie.split(';').forEach((c) => {
+                  document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/');
+                });
+                window.location.href = '/login';
+              }}
+              className="p-1.5 text-st-muted hover:text-red-400 rounded-none hover:bg-red-500/10 transition-colors whitespace-nowrap shrink-0 border-none bg-transparent cursor-pointer"
               title="Sair da Conta"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-            </Link>
+            </button>
           </div>
 
           {/* Theme Toggle Row */}

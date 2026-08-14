@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react';
 import { Users, Plus, Search, Phone, Mail, MapPin, Dog, MessageSquare, ChevronRight } from 'lucide-react';
-import { INITIAL_CUSTOMERS } from '@/lib/mockData';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
 import { getScopedData } from '@/lib/data/clinicDataScope';
 
 export default function TutoresPage() {
-  const [tutores] = useState(() => getScopedData('petia_customers', INITIAL_CUSTOMERS));
+  const [tutores] = useState<any[]>(() => getScopedData('petia_customers'));
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTutores = tutores.filter(

@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react';
 import { Package, Plus, Search, RefreshCw } from 'lucide-react';
-import { INITIAL_INVENTORY } from '@/lib/mockData';
 import { formatCurrency } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
 import { getScopedData } from '@/lib/data/clinicDataScope';
 
 export default function InventoryPage() {
-  const [inventory] = useState(() => getScopedData('petia_inventory', INITIAL_INVENTORY));
+  const [inventory] = useState<any[]>(() => getScopedData('petia_inventory'));
   const [searchTerm, setSearchTerm] = useState('');
 
   const filtered = inventory.filter(

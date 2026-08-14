@@ -43,15 +43,15 @@ import { supabase } from '@/lib/supabaseClient';
 
 export default function PerfilPage() {
   // Representative Profile State
-  const [name, setName] = useState('Dr. Lucas Mendes');
-  const [email, setEmail] = useState('lucas@petia.com.br');
-  const [cpf, setCpf] = useState('384.921.048-29');
-  const [birthDate, setBirthDate] = useState('1988-06-14');
-  const [whatsapp, setWhatsapp] = useState('(11) 99123-4567');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Clinic & Plan State
-  const [clinicName, setClinicName] = useState('Clínica Veterinária Petia');
+  const [clinicName, setClinicName] = useState('');
   const [planType, setPlanType] = useState<PlanType>('ouro');
 
   // Security Accordion & Password Visibility Toggles

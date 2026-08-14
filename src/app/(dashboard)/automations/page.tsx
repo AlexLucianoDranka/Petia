@@ -17,42 +17,47 @@ import {
   Sparkles,
   Send,
 } from 'lucide-react';
-import { INITIAL_NOTIFICATION_LOGS, INITIAL_MEDICAL_RECORDS, INITIAL_PETS, INITIAL_CUSTOMERS } from '@/lib/mockData';
 import { automationEngine, AutomationResult } from '@/services/automations';
+import { getScopedData } from '@/lib/data/clinicDataScope';
 import { PlanGate } from '@/components/ui/PlanGate';
 import { whatsappService } from '@/services/notifications/whatsapp';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
 export default function AutomationsPage() {
-  const [logs, setLogs] = useState(INITIAL_NOTIFICATION_LOGS);
+  const [logs, setLogs] = useState<any[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [lastResults, setLastResults] = useState<AutomationResult[] | null>(null);
 
+  // Load scoped data
+  const medicalRecords = getScopedData<any>('petia_medical_records');
+  const pets = getScopedData<any>('petia_pets');
+  const customers = getScopedData<any>('petia_customers');
+
   // Relationship Automations State
-  const birthdayPets = INITIAL_PETS.slice(0, 2);
-  const inactiveCustomers = INITIAL_CUSTOMERS.slice(0, 2);
+  const birthdayPets = pets.slice(0, 2);
+  const inactiveCustomers = customers.slice(0, 2);
 
   const handleRunAllAutomations = async () => {
     setIsRunning(true);
     setLastResults(null);
 
-    const vacResult = await automationEngine.checkVaccineReminders(INITIAL_MEDICAL_RECORDS, INITIAL_PETS, INITIAL_CUSTOMERS);
-    const birthResult = await automationEngine.checkPetBirthdays(INITIAL_PETS, INITIAL_CUSTOMERS);
+    const vacResult = await automationEngine.checkVaccineReminders(medicalRecords as any, pets as any, customers as any);
+    const birthResult = await automationEngine.checkPetBirthdays(pets as any, customers as any);
 
     setLastResults([vacResult, birthResult]);
     setIsRunning(false);
 
     const newLog = {
       id: `log-${Date.now()}`,
-      clinic_id: 'c101',
-      customer_id: 'cust-1',
-      customer_name: 'Mariana Silva Santos',
+      clinic_id: 'real-clinic',
+      customer_id: '',
+      customer_name: 'Sistema',
       channel: 'whatsapp' as const,
-      type: 'Lembrete de Vacina V4 Felina (Luna)',
+      type: 'Automação disparada manualmente',
       sent_at: new Date().toISOString(),
       status: 'delivered' as const,
     };
-    setLogs([newLog, ...logs]);
+    setLogs((prev) => [newLog, ...prev]);
   };
 
   const handleSendBirthdayWhatsApp = (pet: any) => {

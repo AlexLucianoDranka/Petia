@@ -7,21 +7,21 @@ import { formatCNPJ, formatPhone } from '@/lib/utils';
 
 export default function SettingsPage() {
   // Clinic Registration Info
-  const [name, setName] = useState('Clínica Veterinária Petia');
-  const [cnpj, setCnpj] = useState('48.912.304/0001-89');
-  const [phone, setPhone] = useState('(11) 3045-8921');
-  const [email, setEmail] = useState('contato@petia.com.br');
+  const [name, setName] = useState('');
+  const [cnpj, setCnpj] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   // Address
-  const [address, setAddress] = useState('Rua Harmonia, 450');
-  const [district, setDistrict] = useState('Vila Madalena');
-  const [city, setCity] = useState('São Paulo');
-  const [state, setState] = useState('SP');
-  const [zipCode, setZipCode] = useState('05435-000');
+  const [address, setAddress] = useState('');
+  const [district, setDistrict] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zipCode, setZipCode] = useState('');
 
   // PDF & Document Customization
-  const [vetResponsible, setVetResponsible] = useState('Dr. Lucas Mendes - CRMV-SP 48.912');
+  const [vetResponsible, setVetResponsible] = useState('');
   const [pdfHeader, setPdfHeader] = useState('PETIA • Gestão Veterinária & Atendimento Especializado');
   const [pdfFooter, setPdfFooter] = useState('Emita seus comprovantes e atestados diretamente pelo sistema Petia.');
 

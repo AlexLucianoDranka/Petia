@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckSquare, Square, Building2, User, FileText, Phone, MapPin, Calendar, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Login States
   const [email, setEmail] = useState('');
@@ -49,6 +49,7 @@ export default function LoginPage() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
     if (rememberEmail && email) {
       localStorage.setItem('petia_saved_email', email);
@@ -56,36 +57,39 @@ export default function LoginPage() {
       localStorage.removeItem('petia_saved_email');
     }
 
-    // Try Supabase Auth
+    // Supabase Auth — required for access
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const isSupabaseReal = supabaseUrl && !supabaseUrl.includes('placeholder');
 
-    if (isSupabaseReal) {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-      if (authError) {
-        if (authError.message.toLowerCase().includes('email not confirmed')) {
-          setError('Seu e-mail ainda não foi confirmado. Acesse sua caixa de entrada e clique no link de ativação.');
-        } else if (authError.message === 'Invalid login credentials') {
-          setError('E-mail ou senha incorretos. Verifique seus dados.');
-        } else {
-          setError(authError.message);
-        }
-        return;
+    if (!isSupabaseReal) {
+      setError('Configuração de autenticação não encontrada. Contate o suporte.');
+      setIsLoading(false);
+      return;
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError) {
+      if (authError.message.toLowerCase().includes('email not confirmed')) {
+        setError('Seu e-mail ainda não foi confirmado. Acesse sua caixa de entrada e clique no link de ativação.');
+      } else if (authError.message === 'Invalid login credentials') {
+        setError('E-mail ou senha incorretos. Verifique seus dados.');
+      } else {
+        setError(authError.message);
       }
+      setIsLoading(false);
+      return;
     }
 
-    // Set browser session cookie so middleware grants access to protected routes
-    document.cookie = 'petia_session=true; path=/; max-age=86400; SameSite=Lax';
+    // Save real user profile to localStorage from Supabase
+    const user = authData?.user;
+    const userProfile = {
+      email: user?.email || email,
+      name: user?.user_metadata?.name || user?.email?.split('@')[0] || email.split('@')[0],
+      role: 'owner',
+    };
+    localStorage.setItem('petia_user_profile', JSON.stringify(userProfile));
 
-    // Save profile for local state
-    const userProfile = JSON.parse(localStorage.getItem('petia_user_profile') || '{}');
-    if (!userProfile.email && email) {
-      localStorage.setItem('petia_user_profile', JSON.stringify({ email, name: email.split('@')[0], role: 'owner' }));
-    }
-
-    startTransition(() => {
-      window.location.href = '/dashboard';
-    });
+    window.location.href = '/dashboard';
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
@@ -371,14 +375,14 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isLoading}
                 className="w-full py-3 rounded-lg font-semibold text-sm text-white transition-all duration-200 mt-2 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap shrink-0 border-none"
                 style={{
-                  background: isPending ? '#2B5BAA' : 'linear-gradient(135deg, #2B5BAA, #3B82F6)',
-                  boxShadow: isPending ? 'none' : '0 4px 15px rgba(59,130,246,0.3)',
+                  background: isLoading ? '#2B5BAA' : 'linear-gradient(135deg, #2B5BAA, #3B82F6)',
+                  boxShadow: isLoading ? 'none' : '0 4px 15px rgba(59,130,246,0.3)',
                 }}
               >
-                {isPending ? 'Entrando no Petia...' : 'Entrar'}
+                {isLoading ? 'Entrando no Petia...' : 'Entrar'}
               </button>
             </form>
           ) : (
@@ -525,7 +529,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isLoading}
                 className="w-full py-3 rounded-lg font-semibold text-sm text-white transition-all duration-200 mt-3 flex items-center justify-center gap-2 whitespace-nowrap shrink-0 border-none"
                 style={{
                   background: 'linear-gradient(135deg, #2B5BAA, #3B82F6)',

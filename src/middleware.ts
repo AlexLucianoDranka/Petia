@@ -30,6 +30,8 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+  const { pathname } = request.nextUrl;
+
   // Skip auth check if Supabase keys are not yet configured
   if (!supabaseUrl || !supabaseAnonKey) {
     return response;
@@ -54,12 +56,8 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const hasFallbackSession =
-    request.cookies.has('petia_session') ||
-    request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
-
-  const isAuthenticated = !!user || hasFallbackSession;
-  const { pathname } = request.nextUrl;
+  // Only trust Supabase's verified user — no fallback cookie bypass
+  const isAuthenticated = !!user;
 
   const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
@@ -69,8 +67,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // If authenticated and hitting /login, redirect to dashboard
-  if (isAuthenticated && pathname === '/login') {
+  // If authenticated and hitting /login or /, redirect to dashboard
+  if (isAuthenticated && (pathname === '/login' || pathname === '/')) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

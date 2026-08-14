@@ -6,13 +6,15 @@ import { Header } from '@/components/navigation/Header';
 import { BottomNav } from '@/components/navigation/BottomNav';
 import { VersionBadge } from '@/components/navigation/VersionBadge';
 import { X, Calendar, CheckCircle2 } from 'lucide-react';
-import { INITIAL_PETS, INITIAL_SERVICES } from '@/lib/mockData';
+import { getScopedData } from '@/lib/data/clinicDataScope';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedPet, setSelectedPet] = useState(INITIAL_PETS[0].id);
-  const [selectedService, setSelectedService] = useState(INITIAL_SERVICES[0].id);
+  const [pets] = useState<any[]>(() => getScopedData('petia_pets'));
+  const [servicesList] = useState<any[]>(() => getScopedData('petia_services'));
+  const [selectedPet, setSelectedPet] = useState('');
+  const [selectedService, setSelectedService] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
   const [notes, setNotes] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -83,11 +85,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     onChange={(e) => setSelectedPet(e.target.value)}
                     className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
                   >
-                    {INITIAL_PETS.map((pet) => (
-                      <option key={pet.id} value={pet.id}>
-                        {pet.name} ({pet.breed}) — Tutor: {pet.customer_name}
-                      </option>
-                    ))}
+                    {pets.length === 0 ? (
+                      <option value="">Nenhum pet cadastrado ainda</option>
+                    ) : (
+                      pets.map((pet: any) => (
+                        <option key={pet.id} value={pet.id}>
+                          {pet.name} ({pet.breed}) — Tutor: {pet.customer_name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
 
@@ -98,11 +104,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     onChange={(e) => setSelectedService(e.target.value)}
                     className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
                   >
-                    {INITIAL_SERVICES.map((srv) => (
-                      <option key={srv.id} value={srv.id}>
-                        {srv.name} — R$ {srv.price.toFixed(2)} ({srv.duration_minutes} min)
-                      </option>
-                    ))}
+                    {servicesList.length === 0 ? (
+                      <option value="">Nenhum serviço cadastrado ainda</option>
+                    ) : (
+                      servicesList.map((srv: any) => (
+                        <option key={srv.id} value={srv.id}>
+                          {srv.name} — R$ {Number(srv.price).toFixed(2)} ({srv.duration_minutes} min)
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
 
@@ -120,9 +130,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div>
                     <label className="block font-semibold text-st-muted mb-1">Profissional / Vet</label>
                     <select className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium">
-                      <option value="u1">Dr. Lucas Mendes (Vet)</option>
-                      <option value="u2">Dra. Camila Rocha (Vet)</option>
-                      <option value="u3">Ana Beatris (Estética)</option>
+                      <option value="">Selecione um profissional</option>
                     </select>
                   </div>
                 </div>

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { CreditCard, Plus, Search, Sparkles, X, Check, Copy, ExternalLink, ShieldCheck } from 'lucide-react';
-import { INITIAL_CUSTOMER_SUBSCRIPTIONS } from '@/lib/mockData';
 import { formatDate } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { PlanGate } from '@/components/ui/PlanGate';
@@ -33,7 +32,7 @@ const INITIAL_CLUB_PLANS: ClubPlan[] = [
 ];
 
 export default function SubscriptionsPage() {
-  const [subscriptions, setSubscriptions] = useState(INITIAL_CUSTOMER_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [clubPlans, setClubPlans] = useState<ClubPlan[]>(INITIAL_CLUB_PLANS);
   const [searchTerm, setSearchTerm] = useState('');
 

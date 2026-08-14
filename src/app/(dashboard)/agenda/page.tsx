@@ -14,7 +14,6 @@ import {
   Star,
   Share2,
 } from 'lucide-react';
-import { INITIAL_APPOINTMENTS, INITIAL_STAFF } from '@/lib/mockData';
 import { AppointmentStatus } from '@/types/database';
 import { whatsappService } from '@/services/notifications/whatsapp';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
@@ -38,8 +37,8 @@ export default function AgendaPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'heatmap'>('day');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [staffFilter, setStaffFilter] = useState<string>('all');
-  const [appointments, setAppointments] = useState(() =>
-    getScopedData('petia_appointments', INITIAL_APPOINTMENTS)
+  const [appointments, setAppointments] = useState<any[]>(() =>
+    getScopedData('petia_appointments')
   );
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 

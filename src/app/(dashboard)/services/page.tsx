@@ -2,12 +2,11 @@
 
 import React, { useState } from 'react';
 import { Briefcase, Plus, Search, Clock } from 'lucide-react';
-import { INITIAL_SERVICES } from '@/lib/mockData';
 import { formatCurrency } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
 export default function ServicesPage() {
-  const [services] = useState(INITIAL_SERVICES);
+  const [services, setServices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filtered = services.filter(

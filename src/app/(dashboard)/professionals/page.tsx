@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { UserCheck, Plus, Search, Phone, Mail, DollarSign, Download, Percent, Award, Calendar, Sparkles } from 'lucide-react';
-import { INITIAL_PROFESSIONALS, Professional } from '@/lib/data/professionals';
+import { Professional } from '@/lib/data/professionals';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { PlanGate } from '@/components/ui/PlanGate';
 import jsPDF from 'jspdf';
@@ -48,8 +48,8 @@ const INITIAL_COMMISSIONS: CommissionReport[] = [
 ];
 
 export default function ProfessionalsPage() {
-  const [professionals] = useState<Professional[]>(INITIAL_PROFESSIONALS);
-  const [commissions] = useState<CommissionReport[]>(INITIAL_COMMISSIONS);
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [commissions] = useState<CommissionReport[]>([]);
   const [activeTab, setActiveTab] = useState<'directory' | 'commissions'>('directory');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('Fevereiro / 2026');

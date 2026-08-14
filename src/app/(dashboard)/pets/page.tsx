@@ -24,7 +24,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { INITIAL_PETS, INITIAL_MEDICAL_RECORDS } from '@/lib/mockData';
+import { getScopedData } from '@/lib/data/clinicDataScope';
 import { Pet, PetMedicalRecord } from '@/types/database';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { showToast, startTopLoader, stopTopLoader } from '@/components/ui/GlobalToastAndLoader';
@@ -39,35 +39,16 @@ interface ExamItem {
   notes?: string;
 }
 
-const INITIAL_EXAMS: ExamItem[] = [
-  {
-    id: 'ex-1',
-    pet_id: 'pet-1',
-    title: 'Raio-X Tórax e Abdômen',
-    category: 'radiography',
-    image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&auto=format&fit=crop&q=80',
-    date: '2026-02-10',
-    notes: 'Apresenta estrutura óssea sem fraturas visíveis.',
-  },
-  {
-    id: 'ex-2',
-    pet_id: 'pet-1',
-    title: 'Ultrassom Abdominal Total',
-    category: 'ultrasound',
-    image_url: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&auto=format&fit=crop&q=80',
-    date: '2026-01-15',
-    notes: 'Órgãos internos sem alterações morfometria padrão.',
-  },
-];
+const INITIAL_EXAMS: ExamItem[] = [];
 
-import { getScopedData } from '@/lib/data/clinicDataScope';
+
 
 export default function PetsPage() {
-  const [pets, setPets] = useState(() => getScopedData('petia_pets', INITIAL_PETS));
+  const [pets, setPets] = useState<Pet[]>(() => getScopedData('petia_pets'));
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [medicalRecords, setMedicalRecords] = useState(INITIAL_MEDICAL_RECORDS);
-  const [exams, setExams] = useState<ExamItem[]>(INITIAL_EXAMS);
+  const [medicalRecords, setMedicalRecords] = useState<PetMedicalRecord[]>(() => getScopedData('petia_medical_records'));
+  const [exams, setExams] = useState<ExamItem[]>([]);
 
   const [activeDrawerTab, setActiveDrawerTab] = useState<'records' | 'exams'>('records');
 

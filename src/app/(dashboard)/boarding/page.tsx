@@ -6,34 +6,7 @@ import { formatDate } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
 export default function BoardingPage() {
-  const [currentGuests] = useState([
-    {
-      id: 'b-1',
-      petName: 'Thor',
-      breed: 'Golden Retriever',
-      tutorName: 'Mariana Silva Santos',
-      phone: '(11) 99123-4567',
-      unit: 'Baia #01 (Canil VIP)',
-      checkIn: '2026-08-10 09:00',
-      checkOutExpected: '2026-08-15 18:00',
-      type: 'Hotelzinho',
-      dietNotes: 'Ração Premier 300g às 08:00 e 18:00. Medicação para articulação às 12:00.',
-      status: 'checked_in',
-    },
-    {
-      id: 'b-2',
-      petName: 'Luna',
-      breed: 'Persa',
-      tutorName: 'Carlos Eduardo',
-      phone: '(11) 98765-4321',
-      unit: 'Gatil Suíte #03',
-      checkIn: '2026-08-11 08:30',
-      checkOutExpected: '2026-08-11 19:00',
-      type: 'Daycare / Creche',
-      dietNotes: 'Sachê sachê sachê às 13:00. Adora brincar com o arranhador azul.',
-      status: 'checked_in',
-    },
-  ]);
+  const [currentGuests, setCurrentGuests] = useState<any[]>([]);
 
   return (
     <div className="space-y-6 animate-fade-up w-full pb-12">

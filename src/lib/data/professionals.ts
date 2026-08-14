@@ -17,41 +17,6 @@ export interface Professional {
   created_at?: string;
 }
 
-export const INITIAL_PROFESSIONALS: Professional[] = [
-  {
-    id: 'prof-1',
-    name: 'Dr. Lucas Mendes',
-    specialty: 'veterinario',
-    document_number: 'CRMV-SP 48.912',
-    phone: '(11) 98765-4321',
-    email: 'lucas@petia.com.br',
-    photo_url: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&auto=format&fit=crop&q=80',
-    commission_percent: 30.0,
-    active: true,
-  },
-  {
-    id: 'prof-2',
-    name: 'Dra. Camila Rocha',
-    specialty: 'veterinario',
-    document_number: 'CRMV-SP 52.104',
-    phone: '(11) 97654-3210',
-    email: 'camila@petia.com.br',
-    photo_url: 'https://images.unsplash.com/photo-1594824813566-88855ce78965?w=200&auto=format&fit=crop&q=80',
-    commission_percent: 30.0,
-    active: true,
-  },
-  {
-    id: 'prof-3',
-    name: 'Ana Beatris (Estética)',
-    specialty: 'groomer',
-    phone: '(11) 96543-2109',
-    email: 'ana@petia.com.br',
-    photo_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&auto=format&fit=crop&q=80',
-    commission_percent: 15.0,
-    active: true,
-  },
-];
-
 export async function fetchProfessionals(): Promise<Professional[]> {
   try {
     const { data, error } = await supabase
@@ -59,12 +24,10 @@ export async function fetchProfessionals(): Promise<Professional[]> {
       .select('*')
       .order('name');
 
-    if (error || !data || data.length === 0) {
-      return INITIAL_PROFESSIONALS;
-    }
+    if (error || !data) return [];
     return data as Professional[];
   } catch (err) {
-    return INITIAL_PROFESSIONALS;
+    return [];
   }
 }
 

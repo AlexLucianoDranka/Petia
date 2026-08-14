@@ -27,24 +27,7 @@ import jsPDF from 'jspdf';
 
 import { getScopedData } from '@/lib/data/clinicDataScope';
 
-const DEMO_RECEIVABLES = [
-  { id: 'rec-1', customer: 'Mariana Silva Santos', pet: 'Thor', service: 'Consulta Veterinária', amount: 150.0, dueDate: '2026-08-15', status: 'pending' },
-  { id: 'rec-2', customer: 'Carlos Eduardo', pet: 'Luna', service: 'Vacina V4 Felina', amount: 120.0, dueDate: '2026-08-10', status: 'paid' },
-  { id: 'rec-3', customer: 'Fernanda Oliveira', pet: 'Bob', service: 'Plano Ouro Mensal', amount: 99.9, dueDate: '2026-08-01', status: 'paid' },
-  { id: 'rec-4', customer: 'Roberto Lima', pet: 'Mel', service: 'Cirurgia Castração', amount: 450.0, dueDate: '2026-08-05', status: 'overdue' },
-];
 
-const DEMO_PAYABLES = [
-  { id: 'pay-1', supplier: 'Distribuidora Pet Distribuição LTDA', description: 'Rações Royal Canin & Premier', amount: 1250.0, dueDate: '2026-08-20', status: 'pending' },
-  { id: 'pay-2', supplier: 'Laboratório VetLab', description: 'Exames de Sangue Hemograma', amount: 380.0, dueDate: '2026-08-12', status: 'pending' },
-  { id: 'pay-3', supplier: 'Enel Energia Elétrica', description: 'Conta de Luz Clínica', amount: 620.0, dueDate: '2026-08-08', status: 'paid' },
-];
-
-const DEMO_COMMISSIONS = [
-  { id: 'c-1', prof: 'Dr. Lucas Mendes', role: 'Veterinário', servicesCount: 28, totalSales: 4200.0, percent: 30, commissionDue: 1260.0 },
-  { id: 'c-2', prof: 'Dra. Camila Rocha', role: 'Veterinária', servicesCount: 19, totalSales: 2850.0, percent: 30, commissionDue: 855.0 },
-  { id: 'c-3', prof: 'Ana Beatris', role: 'Groomer', servicesCount: 42, totalSales: 3780.0, percent: 15, commissionDue: 567.0 },
-];
 
 export default function FinancialPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'pdv' | 'receivables' | 'payables' | 'commissions'>('overview');
@@ -57,9 +40,9 @@ export default function FinancialPage() {
   const [saleCompleted, setSaleCompleted] = useState(false);
 
   // Payables & Receivables Scoped Data
-  const [receivables, setReceivables] = useState(() => getScopedData('petia_receivables', DEMO_RECEIVABLES));
-  const [payables, setPayables] = useState(() => getScopedData('petia_payables', DEMO_PAYABLES));
-  const [commissions] = useState(() => getScopedData('petia_commissions', DEMO_COMMISSIONS));
+  const [receivables, setReceivables] = useState<any[]>(() => getScopedData('petia_receivables'));
+  const [payables, setPayables] = useState<any[]>(() => getScopedData('petia_payables'));
+  const [commissions] = useState<any[]>(() => getScopedData('petia_commissions'));
 
   const subtotalPdv = pdvItems.reduce((acc, item) => acc + item.price * item.qty, 0);
 

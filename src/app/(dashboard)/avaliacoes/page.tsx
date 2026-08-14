@@ -14,35 +14,8 @@ interface Review {
   created_at: string;
 }
 
-const INITIAL_REVIEWS: Review[] = [
-  {
-    id: 'rev-1',
-    customer_name: 'Mariana Silva Santos',
-    pet_name: 'Thor (Golden Retriever)',
-    rating: 5,
-    comment: 'Atendimento maravilhoso! Dr. Lucas tratou o Thor com extrema paciência e carinho.',
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: 'rev-2',
-    customer_name: 'Carlos Eduardo Paes',
-    pet_name: 'Luna (Persa)',
-    rating: 5,
-    comment: 'Serviço de banho e tosa perfeito, ficou super limpinha e cheirosa!',
-    created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
-  },
-  {
-    id: 'rev-3',
-    customer_name: 'Fernanda Lima',
-    pet_name: 'Bob (Poodle)',
-    rating: 4,
-    comment: 'Ótima clínica, rápida e bem organizada. Recomendo muito!',
-    created_at: new Date(Date.now() - 86400000 * 7).toISOString(),
-  },
-];
-
 export default function AvaliacoesDashboardPage() {
-  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
 
   useEffect(() => {
@@ -51,7 +24,7 @@ export default function AvaliacoesDashboardPage() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setReviews([...parsed, ...INITIAL_REVIEWS]);
+          setReviews(parsed);
         }
       } catch (e) {}
     }

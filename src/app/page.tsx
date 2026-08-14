@@ -59,10 +59,10 @@ export default function LandingPage() {
           </Link>
 
           <Link
-            href="/dashboard"
+            href="/login?mode=register"
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-st-surface hover:bg-st-surface-2 text-st-arctic font-bold text-sm lg:text-base border border-st-border transition-all"
           >
-            Ver Demonstração Interativa
+            Criar Conta Grátis
           </Link>
         </div>
 

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Shield, UserPlus, Check, X, Mail, Eye, Plus, Edit2, Trash2, Lock, UserCheck } from 'lucide-react';
-import { INITIAL_STAFF } from '@/lib/mockData';
 import { StaffUser, UserRole } from '@/types/database';
 import { ALL_MENU_KEYS, getRolePresetPermissions, StaffPermissionRule, upsertStaffPermissions } from '@/lib/data/permissions';
 import { PlanGate } from '@/components/ui/PlanGate';
@@ -10,11 +9,9 @@ import { usePlanLimits } from '@/hooks/usePlanLimits';
 
 export default function StaffPage() {
   const { canAddStaff } = usePlanLimits();
-  const [staffList, setStaffList] = useState<StaffUser[]>(INITIAL_STAFF);
-  const [selectedStaff, setSelectedStaff] = useState<StaffUser>(INITIAL_STAFF[0]);
-  const [permissions, setPermissions] = useState<StaffPermissionRule[]>(
-    getRolePresetPermissions(INITIAL_STAFF[0].role, INITIAL_STAFF[0].id)
-  );
+  const [staffList, setStaffList] = useState<StaffUser[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<StaffUser | null>(null);
+  const [permissions, setPermissions] = useState<StaffPermissionRule[]>([]);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -47,6 +44,7 @@ export default function StaffPage() {
   };
 
   const handleApplyRolePreset = (role: UserRole) => {
+    if (!selectedStaff) return;
     setPermissions(getRolePresetPermissions(role, selectedStaff.id));
   };
 
@@ -125,7 +123,7 @@ export default function StaffPage() {
       {savedSuccess && (
         <div className="p-4 rounded-xl bg-st-success/15 border border-st-success/30 text-st-success text-xs font-semibold flex items-center gap-2 animate-fade-in whitespace-nowrap">
           <Check className="w-4 h-4 shrink-0" />
-          <span>Matriz de permissões salva com sucesso para {selectedStaff.name}!</span>
+          <span>Matriz de permissões salva com sucesso para {selectedStaff?.name}!</span>
         </div>
       )}
 
@@ -140,7 +138,7 @@ export default function StaffPage() {
 
           <div className="space-y-2.5">
             {staffList.map((staff) => {
-              const isSelected = selectedStaff.id === staff.id;
+              const isSelected = selectedStaff?.id === staff.id;
               return (
                 <div
                   key={staff.id}
@@ -171,9 +169,9 @@ export default function StaffPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-st-border/40 pb-4">
             <div>
               <h3 className="font-extrabold text-lg text-st-arctic">
-                Matriz de Permissões: <span className="text-st-electric">{selectedStaff.name}</span>
+                Matriz de Permissões: <span className="text-st-electric">{selectedStaff?.name ?? 'Selecione um funcionário'}</span>
               </h3>
-              <p className="text-xs text-st-muted">Cargo Atual: {selectedStaff.role.toUpperCase()}</p>
+              <p className="text-xs text-st-muted">Cargo Atual: {selectedStaff?.role?.toUpperCase() ?? '—'}</p>
             </div>
 
             {/* Role Preset Quick Toggles */}

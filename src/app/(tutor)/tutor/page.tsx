@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Syringe, Dog, Calendar, CreditCard, Heart, ShieldCheck, Lock, Crown, ArrowRight, Sparkles } from 'lucide-react';
-import { INITIAL_PETS, INITIAL_MEDICAL_RECORDS, INITIAL_APPOINTMENTS } from '@/lib/mockData';
 import Link from 'next/link';
 import { PLANS } from '@/lib/plans';
 import { supabase } from '@/lib/supabaseClient';
@@ -108,8 +107,8 @@ function TutorPlanGate({ children }: { children: React.ReactNode }) {
 
 export default function TutorPortalPage() {
   const [activeTab, setActiveTab] = useState<'pets' | 'appointments' | 'subscriptions'>('pets');
-  const tutorPets = INITIAL_PETS.filter((p) => p.customer_id === 'cust-1');
-  const tutorAppointments = INITIAL_APPOINTMENTS.filter((a) => a.customer_id === 'cust-1');
+  const tutorPets: any[] = [];
+  const tutorAppointments: any[] = [];
 
   return (
     <TutorPlanGate>
@@ -172,7 +171,7 @@ export default function TutorPortalPage() {
           {activeTab === 'pets' && (
             <div className="space-y-4">
               {tutorPets.map((pet) => {
-                const records = INITIAL_MEDICAL_RECORDS.filter((m) => m.pet_id === pet.id);
+                const records: any[] = [];
 
                 return (
                   <div key={pet.id} className="card rounded-2xl p-5 space-y-4">

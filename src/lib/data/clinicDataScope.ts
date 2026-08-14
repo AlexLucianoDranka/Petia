@@ -1,6 +1,6 @@
 /**
  * Multi-Tenant Data Scope & Isolation Helper for Petia SaaS
- * Ensures EVERY clinic (new, existing, or after account deletion) starts with 100% clean, empty data (0 appointments, 0 pets, 0 stock alerts),
+ * Ensures EVERY clinic (new, existing, or after account deletion) starts with 100% clean, empty data,
  * and completely eliminates any fallback demo data.
  */
 
@@ -47,7 +47,11 @@ export function getCurrentClinicScope(): ClinicScopeInfo {
   return { clinicId: 'real-clinic', clinicName: 'Sua Clínica', isDemo: false, isNew: true };
 }
 
-export function getScopedData<T>(storageKey: string, _demoFallbackData: T[] = []): T[] {
+/**
+ * Get scoped data from localStorage. NEVER falls back to demo/mock data.
+ * Always returns real saved data or empty array for new clinics.
+ */
+export function getScopedData<T>(storageKey: string, _ignored?: T[]): T[] {
   if (typeof window === 'undefined') return [];
 
   const saved = localStorage.getItem(storageKey);
@@ -59,6 +63,6 @@ export function getScopedData<T>(storageKey: string, _demoFallbackData: T[] = []
     } catch (e) {}
   }
 
-  // Always return 100% clean empty state for any clinic with no custom data saved yet
+  // Always return 100% clean empty state — NEVER use any fallback mock data
   return [];
 }
