@@ -14,7 +14,6 @@ import {
   CreditCard,
   Zap,
   UserCheck,
-  Building2,
   Sparkles,
 } from 'lucide-react';
 
@@ -51,22 +50,10 @@ export function Sidebar() {
         </Link>
       </div>
 
-      {/* Active Clinic Badge */}
-      <div className="mx-4 my-4 p-3 bg-slate-800/60 rounded-xl border border-slate-700/50 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center font-semibold text-xs border border-brand-500/30">
-          <Building2 className="w-4 h-4" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-slate-200 truncate">Vila Madalena</p>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Plano Pro</span>
-          </div>
-        </div>
-      </div>
+
 
       {/* Navigation Menu */}
-      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scrollbar">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -105,8 +92,8 @@ export function Sidebar() {
             LM
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-200 truncate">Dr. Lucas Mendes</p>
-            <p className="text-[11px] text-slate-400 truncate">Veterinário Responsável</p>
+            <p className="text-xs font-semibold text-slate-200 truncate">Usuário</p>
+            <p className="text-[11px] text-slate-400 truncate">Petia</p>
           </div>
         </div>
       </div>

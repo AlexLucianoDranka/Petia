@@ -83,9 +83,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static Assets (_next/static, icons, images, styles): Cache First, fallback to network
+  // Static Assets (icons, images, styles): Cache First, fallback to network (exclude webpack/HMR)
   if (
-    request.url.includes('/_next/static/') ||
+    (!request.url.includes('webpack') &&
+      !request.url.includes('_next/static/development') &&
+      request.url.includes('/_next/static/')) ||
     request.url.includes('/icons/') ||
     request.url.endsWith('.png') ||
     request.url.endsWith('.svg') ||

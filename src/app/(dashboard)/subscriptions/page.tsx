@@ -5,6 +5,7 @@ import { CreditCard, Plus, Search, Sparkles, X, Check, Copy, ExternalLink, Shiel
 import { formatDate } from '@/lib/utils';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { PlanGate } from '@/components/ui/PlanGate';
+import { ClientPortal } from '@/components/ui/ClientPortal';
 
 interface ClubPlan {
   id: string;
@@ -40,6 +41,18 @@ export default function SubscriptionsPage() {
   const [isNewPlanModalOpen, setIsNewPlanModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [selectedPlanForLink, setSelectedPlanForLink] = useState<ClubPlan | null>(null);
+
+  // Lock background scroll when any modal is open
+  React.useEffect(() => {
+    if (isNewPlanModalOpen || isLinkModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isNewPlanModalOpen, isLinkModalOpen]);
   const [copied, setCopied] = useState(false);
 
   // Form States
@@ -211,10 +224,11 @@ export default function SubscriptionsPage() {
           ))}
         </div>
 
-        {/* Modal Criar Novo Plano do Clube */}
+        {/* Modal Criar Novo Plano do Clube (Centralizado + Lock de Scroll + Portal) */}
         {isNewPlanModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="card rounded-2xl max-w-md w-full p-6 space-y-4 border border-st-border">
+          <ClientPortal>
+            <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-none">
+            <div className="relative my-auto w-full max-w-md card rounded-2xl p-5 sm:p-6 shadow-2xl animate-fade-up max-h-[90vh] flex flex-col">
               <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
                 <h3 className="font-bold text-st-arctic text-base">Criar Novo Plano do Clube</h3>
                 <button onClick={() => setIsNewPlanModalOpen(false)} className="text-st-muted hover:text-st-arctic">
@@ -277,12 +291,14 @@ export default function SubscriptionsPage() {
               </form>
             </div>
           </div>
+          </ClientPortal>
         )}
 
-        {/* Modal Link de Checkout Stripe */}
+        {/* Modal Link de Checkout Stripe (Centralizado + Lock de Scroll + Portal) */}
         {isLinkModalOpen && selectedPlanForLink && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="card rounded-2xl max-w-md w-full p-6 space-y-4 border border-st-border animate-fade-up">
+          <ClientPortal>
+            <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-none">
+            <div className="relative my-auto w-full max-w-md card rounded-2xl p-5 sm:p-6 shadow-2xl animate-fade-up max-h-[90vh] flex flex-col">
               <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
                 <h3 className="font-bold text-st-arctic text-base">Link de Assinatura para Tutor</h3>
                 <button onClick={() => setIsLinkModalOpen(false)} className="text-st-muted hover:text-st-arctic">
@@ -324,9 +340,8 @@ export default function SubscriptionsPage() {
               </div>
             </div>
           </div>
+          </ClientPortal>
         )}
-
-        <SolidaTechBadge variant="auth" />
       </div>
     </PlanGate>
   );

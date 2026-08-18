@@ -31,6 +31,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { supabase } from '@/lib/supabaseClient';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useCurrentPlan } from '@/hooks/useCurrentPlan';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -66,6 +67,7 @@ export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const { isHidden, canView } = usePermissions();
+  const { isTrial, trialDaysRemaining } = useCurrentPlan();
 
   const isDrawerOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const handleClose = onClose || (() => setInternalIsOpen(false));
@@ -157,7 +159,7 @@ export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation Items (Filtrados por Permissões Granulares) */}
-        <nav className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto overscroll-contain">
+        <nav className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto overscroll-contain sidebar-scrollbar">
           {visibleNavItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || pathname.startsWith(href + '/');
             return (
@@ -185,6 +187,29 @@ export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="bg-st-surface/20 border-t border-st-border/10 shrink-0">
+          {/* Trial Status Banner */}
+          {isTrial && (
+            <div className="mx-3 my-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1 font-bold text-[11px] text-amber-400">
+                  <Zap className="w-3.5 h-3.5 shrink-0" />
+                  <span>Teste Grátis (7 Dias)</span>
+                </div>
+                <span className="text-[10px] text-st-muted block truncate mt-0.5">
+                  {trialDaysRemaining > 0
+                    ? `Restam ${trialDaysRemaining} dia${trialDaysRemaining > 1 ? 's' : ''} • Acesso total`
+                    : 'Período encerrado'}
+                </span>
+              </div>
+              <Link
+                href="/planos"
+                className="text-[10px] bg-amber-500 hover:bg-amber-600 text-st-navy font-extrabold px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap shrink-0 shadow-sm"
+              >
+                Ver Planos
+              </Link>
+            </div>
+          )}
+
           {/* User Row */}
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-st-border/10">
             <Link href="/perfil" className="flex items-center gap-3 min-w-0 group" title="Ver Meu Perfil">

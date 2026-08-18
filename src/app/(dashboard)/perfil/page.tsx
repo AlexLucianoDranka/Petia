@@ -653,7 +653,6 @@ export default function PerfilPage() {
         <p className="text-xs font-bold text-st-arctic">Petia • Gestão Veterinária & Pet Shop {APP_VERSION}</p>
         <p className="text-[11px] text-st-muted">Desenvolvido com excelência por Sólida Tech © 2026</p>
         <div className="pt-2">
-          <SolidaTechBadge variant="auth" />
         </div>
       </div>
 

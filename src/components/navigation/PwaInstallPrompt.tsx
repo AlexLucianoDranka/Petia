@@ -15,12 +15,21 @@ export function PwaInstallPrompt() {
       return;
     }
 
-    // Register Service Worker
+    // Register Service Worker in production, or unregister in development
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((reg) => console.log('[PWA] Service Worker registrado:', reg.scope))
-        .catch((err) => console.error('[PWA] Erro ao registrar SW:', err));
+      if (process.env.NODE_ENV === 'production') {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((reg) => console.log('[PWA] Service Worker registrado:', reg.scope))
+          .catch((err) => console.error('[PWA] Erro ao registrar SW:', err));
+      } else {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister();
+            console.log('[PWA] Service Worker desregistrado para ambiente de desenvolvimento.');
+          }
+        });
+      }
     }
 
     // Detect iOS

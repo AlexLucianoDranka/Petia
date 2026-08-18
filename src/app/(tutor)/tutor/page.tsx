@@ -1,108 +1,65 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Syringe, Dog, Calendar, CreditCard, Heart, ShieldCheck, Lock, Crown, ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { PLANS } from '@/lib/plans';
-import { supabase } from '@/lib/supabaseClient';
+import { useCurrentPlan } from '@/hooks/useCurrentPlan';
 
 function TutorPlanGate({ children }: { children: React.ReactNode }) {
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const { isTrial, trialDaysRemaining, planType, isLoading } = useCurrentPlan();
 
-  useEffect(() => {
-    async function checkAccess() {
-      try {
-        // Check via Supabase
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('clinic_id')
-            .eq('id', user.id)
-            .maybeSingle();
-
-          if (userData?.clinic_id) {
-            const { data: clinic } = await supabase
-              .from('clinics')
-              .select('plan')
-              .eq('id', userData.clinic_id)
-              .maybeSingle();
-
-            const plan = clinic?.plan || 'basico';
-            setHasAccess(['ouro', 'platina', 'diamond'].includes(plan));
-            return;
-          }
-        }
-
-        // Fallback: localStorage
-        const cached = localStorage.getItem('petia_current_plan');
-        if (cached) {
-          const { planType } = JSON.parse(cached);
-          setHasAccess(['ouro', 'platina', 'diamond'].includes(planType));
-          return;
-        }
-
-        const clinicData = localStorage.getItem('petia_clinic_data');
-        if (clinicData) {
-          const { plan } = JSON.parse(clinicData);
-          setHasAccess(['ouro', 'platina', 'diamond'].includes(plan || ''));
-          return;
-        }
-
-        // Default: no access
-        setHasAccess(false);
-      } catch (_) {
-        setHasAccess(false);
-      }
-    }
-    checkAccess();
-  }, []);
-
-  if (hasAccess === null) {
-    // Loading — show nothing to avoid flash
+  // Mostra conteúdo enquanto carrega (evita flash)
+  if (isLoading) {
     return <div className="min-h-screen bg-st-navy" />;
   }
 
-  if (!hasAccess) {
-    const requiredPlan = PLANS['ouro'];
-    return (
-      <div className="min-h-screen bg-st-navy flex items-center justify-center p-6">
-        <div className="max-w-md w-full p-8 rounded-2xl border border-blue-500/20 bg-gradient-to-b from-blue-950/40 to-slate-900 text-center space-y-5 shadow-2xl">
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-            style={{ background: 'radial-gradient(circle, #3B82F6, transparent)' }} />
-          <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
-            <Lock className="w-7 h-7" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <Crown className="w-3 h-3" /> Requer plano {requiredPlan.name}
-            </div>
-            <h2 className="text-xl font-extrabold text-white">Portal do Tutor Self-Service</h2>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Permita que tutores acompanhem a saúde dos pets, agendamentos e carteira de vacinação digital — sem precisar ligar para a clínica.
-            </p>
-          </div>
-          <div className="space-y-2 text-left border border-slate-700/40 rounded-xl p-4 bg-slate-800/40">
-            <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-2">Incluso no plano {requiredPlan.name}:</p>
-            {requiredPlan.features.slice(0, 4).map((feat, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
-                <span>{feat}</span>
-              </div>
-            ))}
-          </div>
-          <Link href="/planos"
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-sm shadow-lg transition-all flex items-center justify-center gap-2">
-            <Crown className="w-4 h-4 shrink-0" />
-            <span>Ver Planos e Fazer Upgrade</span>
-            <ArrowRight className="w-4 h-4 shrink-0" />
-          </Link>
-        </div>
-      </div>
-    );
+  // Trial ativo → acesso total a TODAS as funcionalidades
+  const PLAN_ORDER = ['basico', 'essencial', 'profissional', 'ouro', 'platina', 'diamond'];
+  const hasAccess =
+    (isTrial && trialDaysRemaining > 0) ||
+    PLAN_ORDER.indexOf(planType) >= PLAN_ORDER.indexOf('ouro');
+
+  if (hasAccess) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  const requiredPlan = PLANS['ouro'];
+  return (
+    <div className="min-h-screen bg-st-navy flex items-center justify-center p-6">
+      <div className="max-w-md w-full p-8 rounded-2xl border border-blue-500/20 bg-gradient-to-b from-blue-950/40 to-slate-900 text-center space-y-5 shadow-2xl relative overflow-hidden">
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full opacity-10 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #3B82F6, transparent)' }} />
+        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <Crown className="w-3 h-3" /> Requer plano {requiredPlan.name}
+          </div>
+          <h2 className="text-xl font-extrabold text-white">Portal do Tutor Self-Service</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Permita que tutores acompanhem a saúde dos pets, agendamentos e carteira de vacinação digital — sem precisar ligar para a clínica.
+          </p>
+        </div>
+        <div className="space-y-2 text-left border border-slate-700/40 rounded-xl p-4 bg-slate-800/40">
+          <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-2">Incluso no plano {requiredPlan.name}:</p>
+          {requiredPlan.features.slice(0, 4).map((feat, i) => (
+            <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+              <span>{feat}</span>
+            </div>
+          ))}
+        </div>
+        <Link href="/planos"
+          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-sm shadow-lg transition-all flex items-center justify-center gap-2">
+          <Crown className="w-4 h-4 shrink-0" />
+          <span>Ver Planos e Fazer Upgrade</span>
+          <ArrowRight className="w-4 h-4 shrink-0" />
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 export default function TutorPortalPage() {

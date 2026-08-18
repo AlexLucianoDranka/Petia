@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Check, Crown, Zap, ShieldCheck, ArrowRight, ExternalLink, Info, HelpCircle } from 'lucide-react';
 import { PLANS, PlanType } from '@/lib/plans';
-import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
+import { useCurrentPlan } from '@/hooks/useCurrentPlan';
 
 export default function PlanosPage() {
+  const { isTrial, trialDaysRemaining } = useCurrentPlan();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [activePlan, setActivePlan] = useState<PlanType>('ouro');
   const [checkoutLoading, setCheckoutLoading] = useState<PlanType | null>(null);
@@ -52,7 +53,17 @@ export default function PlanosPage() {
     <div className="space-y-8 animate-fade-up w-full max-w-6xl mx-auto pb-12">
       {/* Top Banner Header */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-st-electric/15 border border-st-electric/30 text-st-electric">
+        {isTrial && (
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold bg-amber-500/15 border border-amber-500/30 text-amber-300 animate-fade-in shadow-md">
+            <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              Você está no Período de Teste Grátis de 7 Dias (Acesso Total) • Restam{' '}
+              <strong className="text-white">{trialDaysRemaining} dia{trialDaysRemaining > 1 ? 's' : ''}</strong>
+            </span>
+          </div>
+        )}
+
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-st-electric/15 border border-st-electric/30 text-st-electric block mx-auto w-fit">
           <Sparkles className="w-3.5 h-3.5" /> Planos & Assinaturas Petia
         </div>
         <h1 className="text-3xl lg:text-4xl font-extrabold text-st-arctic tracking-tight">
@@ -222,8 +233,6 @@ STRIPE_WEBHOOK_SECRET=whsec_...`}
           </p>
         </div>
       </div>
-
-      <SolidaTechBadge variant="auth" />
     </div>
   );
 }

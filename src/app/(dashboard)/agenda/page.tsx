@@ -16,20 +16,53 @@ import {
 } from 'lucide-react';
 import { AppointmentStatus } from '@/types/database';
 import { whatsappService } from '@/services/notifications/whatsapp';
-import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 
-const HEATMAP_DATA = [
-  { time: '08:00', Seg: 2, Ter: 1, Qua: 3, Qui: 2, Sex: 4, Sab: 5, Dom: 0 },
-  { time: '09:00', Seg: 4, Ter: 3, Qua: 5, Qui: 4, Sex: 6, Sab: 8, Dom: 1 },
-  { time: '10:00', Seg: 5, Ter: 6, Qua: 6, Qui: 5, Sex: 7, Sab: 9, Dom: 2 },
-  { time: '11:00', Seg: 3, Ter: 4, Qua: 4, Qui: 3, Sex: 5, Sab: 7, Dom: 1 },
-  { time: '13:00', Seg: 2, Ter: 3, Qua: 3, Qui: 2, Sex: 4, Sab: 6, Dom: 0 },
-  { time: '14:00', Seg: 6, Ter: 7, Qua: 8, Qui: 7, Sex: 9, Sab: 10, Dom: 2 },
-  { time: '15:00', Seg: 7, Ter: 8, Qua: 9, Qui: 8, Sex: 10, Sab: 10, Dom: 3 },
-  { time: '16:00', Seg: 5, Ter: 6, Qua: 7, Qui: 6, Sex: 8, Sab: 9, Dom: 1 },
-  { time: '17:00', Seg: 3, Ter: 4, Qua: 5, Qui: 4, Sex: 6, Sab: 7, Dom: 0 },
-  { time: '18:00', Seg: 2, Ter: 2, Qua: 3, Qui: 2, Sex: 4, Sab: 3, Dom: 0 },
-];
+interface HeatmapRow {
+  time: string;
+  Seg: number;
+  Ter: number;
+  Qua: number;
+  Qui: number;
+  Sex: number;
+  Sab: number;
+  Dom: number;
+}
+
+const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+const DAY_KEYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'] as const;
+
+function buildDynamicHeatmap(appointments: any[]): HeatmapRow[] {
+  const grid: Record<string, Record<string, number>> = {};
+  
+  TIME_SLOTS.forEach((slot) => {
+    grid[slot] = { Seg: 0, Ter: 0, Qua: 0, Qui: 0, Sex: 0, Sab: 0, Dom: 0 };
+  });
+
+  appointments.forEach((apt) => {
+    if (!apt.scheduled_at) return;
+    const date = new Date(apt.scheduled_at);
+    if (isNaN(date.getTime())) return;
+
+    const dayKey = DAY_KEYS[date.getDay()];
+    const hour = date.getHours();
+    const slot = `${hour.toString().padStart(2, '0')}:00`;
+
+    if (grid[slot] && dayKey in grid[slot]) {
+      grid[slot][dayKey] += 1;
+    }
+  });
+
+  return TIME_SLOTS.map((slot) => ({
+    time: slot,
+    Seg: grid[slot].Seg,
+    Ter: grid[slot].Ter,
+    Qua: grid[slot].Qua,
+    Qui: grid[slot].Qui,
+    Sex: grid[slot].Sex,
+    Sab: grid[slot].Sab,
+    Dom: grid[slot].Dom,
+  }));
+}
 
 import { getScopedData } from '@/lib/data/clinicDataScope';
 
@@ -158,7 +191,7 @@ export default function AgendaPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-st-border/20">
-                {HEATMAP_DATA.map((row) => (
+                {buildDynamicHeatmap(appointments).map((row) => (
                   <tr key={row.time}>
                     <td className="py-2 px-3 font-mono font-bold text-st-electric text-left">{row.time}</td>
                     <td className="p-1"><div className={`py-2 rounded-lg text-xs ${getHeatmapBg(row.Seg)}`}>{row.Seg}</div></td>
@@ -234,8 +267,6 @@ export default function AgendaPage() {
           ))}
         </div>
       )}
-
-      <SolidaTechBadge variant="auth" />
     </div>
   );
 }

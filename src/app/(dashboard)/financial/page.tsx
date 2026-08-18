@@ -3,26 +3,13 @@
 import React, { useState } from 'react';
 import {
   DollarSign,
-  TrendingUp,
-  CreditCard,
-  Receipt,
-  ShoppingBag,
   ArrowUpRight,
   ArrowDownRight,
-  Plus,
-  Search,
-  Filter,
   CheckCircle2,
-  AlertCircle,
-  Calendar,
   UserCheck,
-  Building2,
-  Printer,
-  MessageSquare,
-  FileSpreadsheet,
+  Receipt,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import jsPDF from 'jspdf';
 
 import { getScopedData } from '@/lib/data/clinicDataScope';
@@ -39,12 +26,37 @@ export default function FinancialPage() {
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'credit' | 'debit' | 'cash'>('pix');
   const [saleCompleted, setSaleCompleted] = useState(false);
 
-  // Payables & Receivables Scoped Data
+  // Payables & Receivables Scoped Data — always from real localStorage, never hardcoded
   const [receivables, setReceivables] = useState<any[]>(() => getScopedData('petia_receivables'));
   const [payables, setPayables] = useState<any[]>(() => getScopedData('petia_payables'));
   const [commissions] = useState<any[]>(() => getScopedData('petia_commissions'));
+  const invoices = getScopedData<any>('petia_invoices');
+
+  // Real computed KPIs — zero hardcoded values
+  const totalRevenue = invoices
+    .filter((inv: any) => inv.status === 'paid')
+    .reduce((acc: number, inv: any) => acc + (inv.amount || 0), 0);
+
+  const totalPendingReceivables = receivables
+    .filter((r: any) => r.status !== 'paid')
+    .reduce((acc: number, r: any) => acc + (r.amount || 0), 0);
+
+  const pendingReceivablesCount = receivables.filter((r: any) => r.status !== 'paid').length;
+
+  const totalPayables = payables
+    .filter((p: any) => p.status !== 'paid')
+    .reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
+
+  const pendingPayablesCount = payables.filter((p: any) => p.status !== 'paid').length;
+
+  const totalCommissions = commissions
+    .reduce((acc: number, c: any) => acc + (c.commissionDue || 0), 0);
 
   const subtotalPdv = pdvItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+
+  // DRE: real computed
+  const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+  const dreNetProfit = totalRevenue - totalPayables - totalCommissions;
 
   const generateReceiptPDF = () => {
     const doc = new jsPDF();
@@ -150,7 +162,7 @@ export default function FinancialPage() {
       {/* TAB 1: VISÃO GERAL & METRICAS */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* KPI Cards Grid */}
+          {/* KPI Cards Grid — all values real from localStorage */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
             <div className="card p-5 rounded-2xl space-y-2">
               <div className="flex items-center justify-between text-st-muted">
@@ -159,8 +171,10 @@ export default function FinancialPage() {
                   <ArrowUpRight className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(18940.0)}</p>
-              <span className="text-[10px] text-st-success font-semibold block">+14% vs mês anterior</span>
+              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(totalRevenue)}</p>
+              <span className="text-[10px] text-st-muted font-semibold block">
+                {totalRevenue > 0 ? 'Receitas confirmadas' : 'Nenhuma receita ainda'}
+              </span>
             </div>
 
             <div className="card p-5 rounded-2xl space-y-2">
@@ -170,8 +184,10 @@ export default function FinancialPage() {
                   <Receipt className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(600.0)}</p>
-              <span className="text-[10px] text-st-muted font-semibold block">4 faturas pendentes</span>
+              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(totalPendingReceivables)}</p>
+              <span className="text-[10px] text-st-muted font-semibold block">
+                {pendingReceivablesCount > 0 ? `${pendingReceivablesCount} fatura${pendingReceivablesCount > 1 ? 's' : ''} pendente${pendingReceivablesCount > 1 ? 's' : ''}` : 'Nenhuma pendente'}
+              </span>
             </div>
 
             <div className="card p-5 rounded-2xl space-y-2">
@@ -181,8 +197,10 @@ export default function FinancialPage() {
                   <ArrowDownRight className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(1630.0)}</p>
-              <span className="text-[10px] text-st-danger font-semibold block">2 despesas pendentes</span>
+              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(totalPayables)}</p>
+              <span className="text-[10px] text-st-danger font-semibold block">
+                {pendingPayablesCount > 0 ? `${pendingPayablesCount} despesa${pendingPayablesCount > 1 ? 's' : ''} pendente${pendingPayablesCount > 1 ? 's' : ''}` : 'Sem despesas pendentes'}
+              </span>
             </div>
 
             <div className="card p-5 rounded-2xl space-y-2">
@@ -192,38 +210,50 @@ export default function FinancialPage() {
                   <UserCheck className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(2682.0)}</p>
-              <span className="text-[10px] text-st-muted font-semibold block">3 profissionais</span>
+              <p className="text-2xl font-extrabold text-st-arctic">{formatCurrency(totalCommissions)}</p>
+              <span className="text-[10px] text-st-muted font-semibold block">
+                {commissions.length > 0 ? `${commissions.length} profissional${commissions.length > 1 ? 'is' : ''}` : 'Nenhuma comissão'}
+              </span>
             </div>
           </div>
 
-          {/* DRE Resumo Simplificado */}
+          {/* DRE Resumo Simplificado — valores calculados dos dados reais */}
           <div className="card p-6 rounded-2xl space-y-4">
             <h3 className="font-bold text-st-arctic text-base border-b border-st-border/40 pb-3">
-              Balanço Financeiro DRE Simplificado (Agosto / 2026)
+              Balanço Financeiro DRE Simplificado ({currentMonth})
             </h3>
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
-                <span className="font-semibold text-st-arctic">Receita Bruta Total (Serviços + Produtos + Assinaturas)</span>
-                <span className="font-extrabold text-st-success text-sm">+ {formatCurrency(18940.0)}</span>
+            {totalRevenue === 0 && totalPayables === 0 && totalCommissions === 0 ? (
+              <div className="flex flex-col items-center py-8 gap-2 text-center">
+                <CheckCircle2 className="w-10 h-10 text-st-muted/40" />
+                <p className="text-sm text-st-muted font-medium">Nenhuma movimentação financeira ainda.</p>
+                <p className="text-xs text-st-muted/70">Registre vendas, receitas e despesas para ver o DRE automático.</p>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
-                <span className="font-semibold text-st-arctic">(-) Custos de Insumos & Fornecedores</span>
-                <span className="font-extrabold text-st-danger text-sm">- {formatCurrency(3250.0)}</span>
+            ) : (
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
+                  <span className="font-semibold text-st-arctic">Receita Bruta Total (Serviços + Produtos + Assinaturas)</span>
+                  <span className="font-extrabold text-st-success text-sm">+ {formatCurrency(totalRevenue)}</span>
+                </div>
+                {totalCommissions > 0 && (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
+                    <span className="font-semibold text-st-arctic">(-) Comissões da Equipe Técnica</span>
+                    <span className="font-extrabold text-st-danger text-sm">- {formatCurrency(totalCommissions)}</span>
+                  </div>
+                )}
+                {totalPayables > 0 && (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
+                    <span className="font-semibold text-st-arctic">(-) Despesas Operacionais Pendentes</span>
+                    <span className="font-extrabold text-st-danger text-sm">- {formatCurrency(totalPayables)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-st-electric/15 border border-st-electric/30">
+                  <span className="font-extrabold text-st-arctic text-sm">(=) Saldo Operacional Estimado</span>
+                  <span className={`font-extrabold text-base ${dreNetProfit >= 0 ? 'text-st-electric' : 'text-st-danger'}`}>
+                    {formatCurrency(dreNetProfit)}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
-                <span className="font-semibold text-st-arctic">(-) Comissões da Equipe Técnica</span>
-                <span className="font-extrabold text-st-danger text-sm">- {formatCurrency(2682.0)}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-st-surface">
-                <span className="font-semibold text-st-arctic">(-) Despesas Operacionais (Aluguel, Luz, Internet)</span>
-                <span className="font-extrabold text-st-danger text-sm">- {formatCurrency(1630.0)}</span>
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-xl bg-st-electric/15 border border-st-electric/30">
-                <span className="font-extrabold text-st-arctic text-sm">(=) Lucro Líquido Operacional</span>
-                <span className="font-extrabold text-st-electric text-base">{formatCurrency(11378.0)}</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -537,8 +567,6 @@ export default function FinancialPage() {
           </div>
         </div>
       )}
-
-      <SolidaTechBadge variant="auth" />
     </div>
   );
 }

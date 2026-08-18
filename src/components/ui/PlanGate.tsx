@@ -41,14 +41,15 @@ export function PlanGate({
   featureDescription,
   children,
 }: PlanGateProps) {
-  const { planType, isLoading } = useCurrentPlan();
+  const { planType, isTrial, trialDaysRemaining, isLoading } = useCurrentPlan();
 
   // Show children while loading to avoid flicker
   if (isLoading) {
     return <>{children}</>;
   }
 
-  const hasAccess = planRank(planType) >= planRank(requiredPlan);
+  // Active 7-day Trial grants 100% full access to test all features of Petia!
+  const hasAccess = (isTrial && trialDaysRemaining > 0) || planRank(planType) >= planRank(requiredPlan);
 
   if (hasAccess) {
     return <>{children}</>;

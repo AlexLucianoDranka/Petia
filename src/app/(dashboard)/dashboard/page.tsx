@@ -11,12 +11,11 @@ import {
   ChevronRight,
   Zap,
   ShieldAlert,
-  Sparkles,
   Syringe,
 } from 'lucide-react';
 import Link from 'next/link';
 
-import { APP_VERSION } from '@/lib/version';
+
 import { OnboardingTour } from '@/components/navigation/OnboardingTour';
 import { getScopedData, getCurrentClinicScope } from '@/lib/data/clinicDataScope';
 import { showToast, startTopLoader, stopTopLoader } from '@/components/ui/GlobalToastAndLoader';
@@ -84,10 +83,6 @@ export default function DashboardPage() {
       {/* Top Banner */}
       <div className="card p-6 lg:p-8 rounded-2xl relative overflow-hidden bg-gradient-to-r from-st-navy via-st-surface to-st-deep border border-st-border shadow-md w-full">
         <div className="space-y-2 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30 text-xs font-semibold whitespace-nowrap shrink-0">
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span className="whitespace-nowrap">Petia • Controle Veterinário {APP_VERSION}</span>
-          </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
             Bem-vindo, {userName || 'Usuário'}
           </h1>

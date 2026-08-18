@@ -360,8 +360,6 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
-
-      <SolidaTechBadge variant="auth" />
     </div>
   );
 }

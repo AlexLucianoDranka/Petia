@@ -242,8 +242,6 @@ WHATSAPP_INSTANCE_ID=petia-instancia-01`}
             </pre>
           </div>
         </div>
-
-        <SolidaTechBadge variant="auth" />
       </div>
     </PlanGate>
   );

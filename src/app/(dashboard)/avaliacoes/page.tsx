@@ -154,8 +154,6 @@ export default function AvaliacoesDashboardPage() {
           </div>
         ))}
       </div>
-
-      <SolidaTechBadge variant="auth" />
     </div>
   );
 }

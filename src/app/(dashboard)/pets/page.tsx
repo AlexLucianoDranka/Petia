@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dog,
   Plus,
@@ -28,6 +28,7 @@ import { getScopedData } from '@/lib/data/clinicDataScope';
 import { Pet, PetMedicalRecord } from '@/types/database';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { showToast, startTopLoader, stopTopLoader } from '@/components/ui/GlobalToastAndLoader';
+import { ClientPortal } from '@/components/ui/ClientPortal';
 
 interface ExamItem {
   id: string;
@@ -39,24 +40,32 @@ interface ExamItem {
   notes?: string;
 }
 
-const INITIAL_EXAMS: ExamItem[] = [];
-
-
-
 export default function PetsPage() {
   const [pets, setPets] = useState<Pet[]>(() => getScopedData('petia_pets'));
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [medicalRecords, setMedicalRecords] = useState<PetMedicalRecord[]>(() => getScopedData('petia_medical_records'));
+  const [medicalRecords, setMedicalRecords] = useState<PetMedicalRecord[]>(() =>
+    getScopedData('petia_medical_records')
+  );
   const [exams, setExams] = useState<ExamItem[]>([]);
-
   const [activeDrawerTab, setActiveDrawerTab] = useState<'records' | 'exams'>('records');
 
   // Modal States
+  const [isAddPetModalOpen, setIsAddPetModalOpen] = useState(false);
   const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isExamAnnotatorOpen, setIsExamAnnotatorOpen] = useState(false);
   const [selectedExamForAnnotate, setSelectedExamForAnnotate] = useState<ExamItem | null>(null);
+
+  // New Pet Form States
+  const [newPetName, setNewPetName] = useState('');
+  const [newPetSpecies, setNewPetSpecies] = useState('Cão');
+  const [newPetBreed, setNewPetBreed] = useState('');
+  const [newPetCustomerName, setNewPetCustomerName] = useState('');
+  const [newPetWeight, setNewPetWeight] = useState('');
+  const [newPetSex, setNewPetSex] = useState<'M' | 'F'>('M');
+  const [newPetNotes, setNewPetNotes] = useState('');
+  const [newPetPhotoUrl, setNewPetPhotoUrl] = useState('');
 
   // New Record Form States
   const [recordType, setRecordType] = useState<'vaccine' | 'deworming' | 'exam' | 'surgery' | 'consultation'>('vaccine');
@@ -68,6 +77,18 @@ export default function PetsPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawColor, setDrawColor] = useState('#ef4444');
+
+  // Lock background scroll when any modal/drawer is open
+  useEffect(() => {
+    if (isAddPetModalOpen || isAddRecordModalOpen || isQrModalOpen || isExamAnnotatorOpen || selectedPet) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isAddPetModalOpen, isAddRecordModalOpen, isQrModalOpen, isExamAnnotatorOpen, selectedPet]);
 
   const filteredPets = pets.filter(
     (p) =>
@@ -163,6 +184,44 @@ export default function PetsPage() {
     setExams([newExam, ...exams]);
   };
 
+  const handleAddPet = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPetName.trim()) return;
+
+    const newPet: Pet = {
+      id: `pet-${Date.now()}`,
+      clinic_id: 'real-clinic',
+      customer_id: `cust-${Date.now()}`,
+      customer_name: newPetCustomerName.trim() || 'Tutor Responsável',
+      name: newPetName.trim(),
+      species: newPetSpecies,
+      breed: newPetBreed.trim() || 'SRD',
+      weight: parseFloat(newPetWeight) || 0,
+      sex: newPetSex,
+      neutered: false,
+      notes: newPetNotes.trim() || undefined,
+      photo_url: newPetPhotoUrl.trim() || undefined,
+      created_at: new Date().toISOString(),
+    };
+
+    const updated = [newPet, ...pets];
+    setPets(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('petia_pets', JSON.stringify(updated));
+      window.dispatchEvent(new Event('petia_data_updated'));
+    }
+
+    setNewPetName('');
+    setNewPetBreed('');
+    setNewPetCustomerName('');
+    setNewPetWeight('');
+    setNewPetNotes('');
+    setNewPetPhotoUrl('');
+    setIsAddPetModalOpen(false);
+
+    showToast('Pet cadastrado com sucesso!', 'success');
+  };
+
   return (
     <div className="space-y-6 animate-fade-up w-full pb-12">
       {/* Top Header */}
@@ -172,10 +231,15 @@ export default function PetsPage() {
             <Dog className="w-6 h-6 text-st-electric" />
             <span>Pets, Prontuário & Raio-X Digital</span>
           </h1>
-          <p className="text-xs text-st-muted mt-0.5">Ficha clínica, anotação em exames e QR Code do tutor no Petia</p>
+          <p className="text-xs text-st-muted mt-0.5">
+            Ficha clínica, anotação em exames e QR Code do tutor no Petia
+          </p>
         </div>
 
-        <button className="flex items-center gap-2 bg-st-electric hover:bg-st-steel text-white text-xs lg:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-glow transition-all whitespace-nowrap border-none">
+        <button
+          onClick={() => setIsAddPetModalOpen(true)}
+          className="flex items-center gap-2 bg-st-electric hover:bg-st-steel text-white text-xs lg:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-glow transition-all whitespace-nowrap border-none cursor-pointer"
+        >
           <Plus className="w-4 h-4 shrink-0" />
           <span>Cadastrar Novo Pet</span>
         </button>
@@ -268,325 +332,485 @@ export default function PetsPage() {
 
       {/* Prontuário & Exames Drawer */}
       {selectedPet && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-end p-0 sm:p-4">
-          <div className="card w-full max-w-2xl h-full sm:h-auto max-h-[90vh] rounded-none sm:rounded-2xl p-6 space-y-5 overflow-y-auto border border-st-border">
-            <div className="flex items-center justify-between border-b border-st-border/40 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-st-surface border border-st-border overflow-hidden flex items-center justify-center">
-                  {selectedPet.photo_url ? (
-                    <img src={selectedPet.photo_url} alt={selectedPet.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Dog className="w-6 h-6 text-st-electric" />
-                  )}
+        <ClientPortal>
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-end p-0 sm:p-4">
+            <div className="card w-full max-w-2xl h-full sm:h-auto max-h-[90vh] rounded-none sm:rounded-2xl p-6 space-y-5 overflow-y-auto border border-st-border">
+              <div className="flex items-center justify-between border-b border-st-border/40 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-st-surface border border-st-border overflow-hidden flex items-center justify-center">
+                    {selectedPet.photo_url ? (
+                      <img src={selectedPet.photo_url} alt={selectedPet.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Dog className="w-6 h-6 text-st-electric" />
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-extrabold text-st-arctic">{selectedPet.name}</h2>
+                    <p className="text-xs text-st-muted">{selectedPet.breed} • Tutor: {selectedPet.customer_name}</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-extrabold text-st-arctic">{selectedPet.name}</h2>
-                  <p className="text-xs text-st-muted">{selectedPet.breed} • Tutor: {selectedPet.customer_name}</p>
-                </div>
+                <button
+                  onClick={() => setSelectedPet(null)}
+                  className="p-2 text-st-muted hover:text-st-arctic rounded-xl hover:bg-st-surface-2"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button onClick={() => setSelectedPet(null)} className="text-st-muted hover:text-st-arctic">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            {/* Navigation Tabs Inside Drawer */}
-            <div className="flex items-center gap-2 border-b border-st-border/40 pb-2">
-              <button
-                onClick={() => setActiveDrawerTab('records')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                  activeDrawerTab === 'records'
-                    ? 'bg-st-electric text-white shadow-glow-sm'
-                    : 'text-st-muted hover:text-st-arctic'
-                }`}
-              >
-                <Activity className="w-4 h-4" />
-                <span>Prontuário & Vacinas ({selectedPetRecords.length})</span>
-              </button>
-              <button
-                onClick={() => setActiveDrawerTab('exams')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                  activeDrawerTab === 'exams'
-                    ? 'bg-st-electric text-white shadow-glow-sm'
-                    : 'text-st-muted hover:text-st-arctic'
-                }`}
-              >
-                <ImageIcon className="w-4 h-4" />
-                <span>Exames & Raio-X ({selectedPetExams.length})</span>
-              </button>
-            </div>
+              {/* Tabs inside Drawer */}
+              <div className="flex items-center gap-2 border-b border-st-border/40 pb-3">
+                <button
+                  onClick={() => setActiveDrawerTab('records')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    activeDrawerTab === 'records'
+                      ? 'bg-st-electric text-white shadow-glow-sm'
+                      : 'text-st-muted hover:text-st-arctic'
+                  }`}
+                >
+                  Linha do Tempo Clínica ({selectedPetRecords.length})
+                </button>
+                <button
+                  onClick={() => setActiveDrawerTab('exams')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    activeDrawerTab === 'exams'
+                      ? 'bg-st-electric text-white shadow-glow-sm'
+                      : 'text-st-muted hover:text-st-arctic'
+                  }`}
+                >
+                  Exames & Raio-X ({selectedPetExams.length})
+                </button>
+              </div>
 
-            {/* Tab 1: Records */}
-            {activeDrawerTab === 'records' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-st-arctic text-xs uppercase tracking-wider">Histórico Clínico</h3>
-                  <button
-                    onClick={() => setIsAddRecordModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-st-electric text-white text-xs font-bold shadow-glow border-none"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5" /> Adicionar Registro
-                  </button>
-                </div>
+              {/* Records Tab Content */}
+              {activeDrawerTab === 'records' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-st-arctic text-sm">Histórico Médico & Vacinação</h3>
+                    <button
+                      onClick={() => setIsAddRecordModalOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-semibold text-xs shadow-glow"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Novo Registro</span>
+                    </button>
+                  </div>
 
-                <div className="space-y-3">
-                  {selectedPetRecords.length === 0 ? (
-                    <p className="text-xs text-st-muted py-6 text-center">Nenhum registro clínico para este pet.</p>
-                  ) : (
-                    selectedPetRecords.map((rec) => (
-                      <div key={rec.id} className="p-3.5 rounded-xl bg-st-surface border border-st-border/60 space-y-1 text-xs">
-                        <div className="flex items-center justify-between font-semibold">
-                          <span className="text-st-electric uppercase text-[10px] tracking-wider font-extrabold">{rec.type}</span>
-                          <span className="text-st-muted font-mono">{rec.date}</span>
+                  <div className="space-y-3">
+                    {selectedPetRecords.length === 0 ? (
+                      <div className="p-8 bg-st-surface/40 rounded-xl text-center text-st-muted text-xs">
+                        Nenhum registro clínico cadastrado para este pet ainda.
+                      </div>
+                    ) : (
+                      selectedPetRecords.map((record) => (
+                        <div key={record.id} className="p-4 rounded-xl bg-st-navy border border-st-border space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-st-electric uppercase tracking-wider">{record.type}</span>
+                            <span className="text-st-muted text-[11px]">{record.date}</span>
+                          </div>
+                          <p className="text-xs text-st-arctic font-medium">{record.description}</p>
+                          <div className="flex items-center justify-between text-[10px] text-st-muted pt-1 border-t border-st-border/30">
+                            <span>Vet: {record.vet_name}</span>
+                            {record.next_due_date && (
+                              <span className="text-st-warning font-semibold">Próx. Dose: {record.next_due_date}</span>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-st-arctic font-medium">{rec.description}</p>
-                        <p className="text-[10px] text-st-muted">Vet: {rec.vet_name}</p>
-                      </div>
-                    ))
-                  )}
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Tab 2: Exams & Radiographies with Canvas Annotator */}
-            {activeDrawerTab === 'exams' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-st-arctic text-xs uppercase tracking-wider">Imagens de Exame & Raio-X</h3>
-                  <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-st-electric text-white text-xs font-bold shadow-glow cursor-pointer">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload Exame</span>
-                    <input type="file" accept="image/*" onChange={handleUploadExam} className="hidden" />
-                  </label>
-                </div>
+              {/* Exams Tab Content */}
+              {activeDrawerTab === 'exams' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-st-arctic text-sm">Imagens Radiológicas & Laudos</h3>
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-semibold text-xs shadow-glow cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload de Raio-X</span>
+                      <input type="file" accept="image/*" onChange={handleUploadExam} className="hidden" />
+                    </label>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {selectedPetExams.map((exam) => (
-                    <div key={exam.id} className="card p-3 rounded-xl border border-st-border space-y-2">
-                      <div className="h-32 rounded-lg bg-st-navy overflow-hidden relative border border-st-border/50">
-                        <img src={exam.image_url} alt={exam.title} className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => {
-                            setSelectedExamForAnnotate(exam);
-                            setIsExamAnnotatorOpen(true);
-                          }}
-                          className="absolute bottom-2 right-2 px-2.5 py-1 bg-st-electric text-white text-[10px] font-extrabold rounded-md shadow-glow flex items-center gap-1"
-                        >
-                          <PenTool className="w-3 h-3" />
-                          <span>Anotar</span>
-                        </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {selectedPetExams.map((exam) => (
+                      <div key={exam.id} className="p-3 rounded-xl bg-st-navy border border-st-border space-y-2">
+                        <div className="relative h-36 rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                          <img src={exam.image_url} alt={exam.title} className="max-h-full object-contain" />
+                          <button
+                            onClick={() => {
+                              setSelectedExamForAnnotate(exam);
+                              setIsExamAnnotatorOpen(true);
+                            }}
+                            className="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-st-electric text-white text-[10px] font-bold flex items-center gap-1 shadow-glow"
+                          >
+                            <PenTool className="w-3 h-3" /> Anotar
+                          </button>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-st-arctic text-xs">{exam.title}</h4>
+                          <p className="text-[10px] text-st-muted">{exam.date} • {exam.category}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-st-arctic text-xs">{exam.title}</h4>
-                        <p className="text-[10px] text-st-muted">{exam.date} • {exam.category}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </ClientPortal>
       )}
 
       {/* QR Code Modal */}
       {isQrModalOpen && selectedPet && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card rounded-2xl max-w-sm w-full p-6 text-center space-y-5 border border-st-border animate-fade-up">
-            <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
-              <h3 className="font-bold text-st-arctic text-base flex items-center gap-2">
-                <QrCode className="w-5 h-5 text-st-electric" />
-                <span>QR Code do Pet</span>
-              </h3>
-              <button onClick={() => setIsQrModalOpen(false)} className="text-st-muted hover:text-st-arctic">
-                <X className="w-4 h-4" />
+        <ClientPortal>
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="card rounded-2xl max-w-sm w-full p-6 text-center space-y-5 border border-st-border animate-fade-up">
+              <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
+                <h3 className="font-bold text-st-arctic text-base flex items-center gap-2">
+                  <QrCode className="w-5 h-5 text-st-electric" />
+                  <span>QR Code do Pet</span>
+                </h3>
+                <button onClick={() => setIsQrModalOpen(false)} className="text-st-muted hover:text-st-arctic">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-4 bg-white rounded-2xl inline-block mx-auto border-4 border-st-electric/30 shadow-glow">
+                <QRCodeSVG
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/tutor?pet=${selectedPet.id}`}
+                  size={180}
+                />
+              </div>
+
+              <div>
+                <h4 className="font-extrabold text-st-arctic text-lg">{selectedPet.name}</h4>
+                <p className="text-xs text-st-muted">Coleiras, carteirinha ou balcão da recepção</p>
+              </div>
+
+              <button
+                onClick={() => window.print()}
+                className="w-full py-2.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-bold text-xs shadow-glow flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                <span>Imprimir QR Code</span>
               </button>
             </div>
-
-            <div className="p-4 bg-white rounded-2xl inline-block mx-auto border-4 border-st-electric/30 shadow-glow">
-              <QRCodeSVG
-                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/tutor?pet=${selectedPet.id}`}
-                size={180}
-              />
-            </div>
-
-            <div>
-              <h4 className="font-extrabold text-st-arctic text-lg">{selectedPet.name}</h4>
-              <p className="text-xs text-st-muted">Coleiras, carteirinha ou balcão da recepção</p>
-            </div>
-
-            <button
-              onClick={() => window.print()}
-              className="w-full py-2.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-bold text-xs shadow-glow flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>Imprimir QR Code</span>
-            </button>
           </div>
-        </div>
+        </ClientPortal>
       )}
 
       {/* Exam Canvas Annotator Modal */}
       {isExamAnnotatorOpen && selectedExamForAnnotate && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="card rounded-2xl max-w-2xl w-full p-6 space-y-4 border border-st-border animate-fade-up">
-            <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
-              <div>
-                <h3 className="font-bold text-st-arctic text-base flex items-center gap-2">
-                  <PenTool className="w-5 h-5 text-st-electric" />
-                  <span>Anotação Clínica sobre Imagem de Exame</span>
-                </h3>
-                <p className="text-xs text-st-muted">{selectedExamForAnnotate.title}</p>
+        <ClientPortal>
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="card rounded-2xl max-w-2xl w-full p-6 space-y-4 border border-st-border animate-fade-up">
+              <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
+                <div>
+                  <h3 className="font-bold text-st-arctic text-base flex items-center gap-2">
+                    <PenTool className="w-5 h-5 text-st-electric" />
+                    <span>Anotação Clínica sobre Imagem de Exame</span>
+                  </h3>
+                  <p className="text-xs text-st-muted">{selectedExamForAnnotate.title}</p>
+                </div>
+                <button onClick={() => setIsExamAnnotatorOpen(false)} className="text-st-muted hover:text-st-arctic">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button onClick={() => setIsExamAnnotatorOpen(false)} className="text-st-muted hover:text-st-arctic">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-st-surface border border-st-border text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-st-muted font-bold">Cor:</span>
-                {['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#ffffff'].map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setDrawColor(color)}
-                    className={`w-6 h-6 rounded-full border-2 ${
-                      drawColor === color ? 'border-white scale-110' : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={clearCanvas}
-                className="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-xs font-semibold"
-              >
-                Limpar Desenho
-              </button>
-            </div>
-
-            {/* Canvas Container */}
-            <div className="relative rounded-xl overflow-hidden bg-black flex items-center justify-center border border-st-border min-h-[300px]">
-              <img
-                src={selectedExamForAnnotate.image_url}
-                alt="Exame"
-                className="max-h-[350px] w-full object-contain pointer-events-none select-none"
-              />
-              <canvas
-                ref={canvasRef}
-                width={600}
-                height={350}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                className="absolute inset-0 w-full h-full cursor-crosshair"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsExamAnnotatorOpen(false)}
-                className="px-4 py-2 rounded-xl border border-st-border text-st-muted text-xs font-bold"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  alert('Anotação salva no prontuário do pet com sucesso!');
-                  setIsExamAnnotatorOpen(false);
-                }}
-                className="px-5 py-2 rounded-xl bg-st-electric text-white text-xs font-bold shadow-glow border-none"
-              >
-                Salvar Anotação no Prontuário
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Adicionar Registro Clínico */}
-      {isAddRecordModalOpen && selectedPet && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card rounded-2xl max-w-md w-full p-6 space-y-4 border border-st-border">
-            <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
-              <h3 className="font-bold text-st-arctic text-base">Novo Registro Clínico</h3>
-              <button onClick={() => setIsAddRecordModalOpen(false)} className="text-st-muted hover:text-st-arctic">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddMedicalRecord} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-st-muted mb-1 font-semibold">Tipo de Registro</label>
-                <select
-                  value={recordType}
-                  onChange={(e: any) => setRecordType(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+              {/* Toolbar */}
+              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-st-surface border border-st-border text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-st-muted font-bold">Cor:</span>
+                  {['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#ffffff'].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setDrawColor(color)}
+                      className={`w-6 h-6 rounded-full border-2 ${
+                        drawColor === color ? 'border-white scale-110' : 'border-transparent'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={clearCanvas}
+                  className="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-xs font-semibold"
                 >
-                  <option value="vaccine">Vacina</option>
-                  <option value="deworming">Vermífugo</option>
-                  <option value="consultation">Consulta Geral</option>
-                  <option value="exam">Exame Laboratorial</option>
-                  <option value="surgery">Cirurgia / Procedimento</option>
-                </select>
+                  Limpar Desenho
+                </button>
               </div>
 
-              <div>
-                <label className="block text-st-muted mb-1 font-semibold">Descrição / Observações</label>
-                <textarea
-                  required
-                  rows={3}
-                  value={recordDesc}
-                  onChange={(e) => setRecordDesc(e.target.value)}
-                  placeholder="Ex: Aplicada Vacina V10 Lote #892. Pet sem alterações."
-                  className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+              {/* Canvas Container */}
+              <div className="relative rounded-xl overflow-hidden bg-black flex items-center justify-center border border-st-border min-h-[300px]">
+                <img
+                  src={selectedExamForAnnotate.image_url}
+                  alt="Exame"
+                  className="max-h-[350px] w-full object-contain pointer-events-none select-none"
+                />
+                <canvas
+                  ref={canvasRef}
+                  width={600}
+                  height={350}
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                  className="absolute inset-0 w-full h-full cursor-crosshair"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-st-muted mb-1 font-semibold">Data da Aplicação</label>
-                  <input
-                    type="date"
-                    required
-                    value={recordDate}
-                    onChange={(e) => setRecordDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
-                  />
-                </div>
-                <div>
-                  <label className="block text-st-muted mb-1 font-semibold">Próximo Vencimento</label>
-                  <input
-                    type="date"
-                    value={recordNextDate}
-                    onChange={(e) => setRecordNextDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
-                  type="button"
-                  onClick={() => setIsAddRecordModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-st-border text-st-muted font-bold"
+                  onClick={() => setIsExamAnnotatorOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-st-border text-st-muted text-xs font-bold"
                 >
                   Cancelar
                 </button>
                 <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-st-electric text-white font-bold shadow-glow border-none"
+                  onClick={() => {
+                    alert('Anotação salva no prontuário do pet com sucesso!');
+                    setIsExamAnnotatorOpen(false);
+                  }}
+                  className="px-5 py-2 rounded-xl bg-st-electric text-white text-xs font-bold shadow-glow border-none"
                 >
-                  Salvar Registro
+                  Salvar Anotação no Prontuário
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </ClientPortal>
       )}
 
-      <SolidaTechBadge variant="auth" />
+      {/* Modal Adicionar Registro Clínico */}
+      {isAddRecordModalOpen && selectedPet && (
+        <ClientPortal>
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="card rounded-2xl max-w-md w-full p-6 space-y-4 border border-st-border">
+              <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
+                <h3 className="font-bold text-st-arctic text-base">Novo Registro Clínico</h3>
+                <button onClick={() => setIsAddRecordModalOpen(false)} className="text-st-muted hover:text-st-arctic">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddMedicalRecord} className="space-y-3 text-xs">
+                <div>
+                  <label className="block text-st-muted mb-1 font-semibold">Tipo de Registro</label>
+                  <select
+                    value={recordType}
+                    onChange={(e: any) => setRecordType(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+                  >
+                    <option value="vaccine">Vacina</option>
+                    <option value="deworming">Vermífugo</option>
+                    <option value="consultation">Consulta Geral</option>
+                    <option value="exam">Exame Laboratorial</option>
+                    <option value="surgery">Cirurgia / Procedimento</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-st-muted mb-1 font-semibold">Descrição / Observações</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={recordDesc}
+                    onChange={(e) => setRecordDesc(e.target.value)}
+                    placeholder="Ex: Aplicada Vacina V10 Lote #892. Pet sem alterações."
+                    className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-st-muted mb-1 font-semibold">Data da Aplicação</label>
+                    <input
+                      type="date"
+                      required
+                      value={recordDate}
+                      onChange={(e) => setRecordDate(e.target.value)}
+                      className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-st-muted mb-1 font-semibold">Próximo Vencimento</label>
+                    <input
+                      type="date"
+                      value={recordNextDate}
+                      onChange={(e) => setRecordNextDate(e.target.value)}
+                      className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddRecordModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-st-border text-st-muted font-bold"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-st-electric text-white font-bold shadow-glow border-none"
+                  >
+                    Salvar Registro
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </ClientPortal>
+      )}
+
+      {/* Modal: Cadastrar Novo Pet (Centralizado + Lock de Scroll) */}
+      {isAddPetModalOpen && (
+        <ClientPortal>
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-none">
+            <div className="relative my-auto w-full max-w-md card rounded-2xl p-5 sm:p-6 shadow-2xl animate-fade-up max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between border-b border-st-border/40 pb-4 mb-4 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-st-electric/20 text-st-electric flex items-center justify-center font-bold shrink-0">
+                    <Dog className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-st-arctic">Cadastrar Novo Pet</h3>
+                    <p className="text-xs text-st-muted">Adicione a ficha digital do paciente</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddPetModalOpen(false)}
+                  className="p-2 rounded-xl text-st-muted hover:text-st-arctic hover:bg-st-surface-2 shrink-0 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddPet} className="space-y-4 text-xs lg:text-sm overflow-y-auto sidebar-scrollbar flex-1 pr-1">
+                <div>
+                  <label className="block font-semibold text-st-muted mb-1">Nome do Pet *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Thor, Luna, Bob..."
+                    value={newPetName}
+                    onChange={(e) => setNewPetName(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">Espécie</label>
+                    <select
+                      value={newPetSpecies}
+                      onChange={(e) => setNewPetSpecies(e.target.value)}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                    >
+                      <option value="Cão">Cão</option>
+                      <option value="Gato">Gato</option>
+                      <option value="Ave">Ave</option>
+                      <option value="Roedor">Roedor</option>
+                      <option value="Outro">Outro</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">Raça</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Golden, Poodle, SRD..."
+                      value={newPetBreed}
+                      onChange={(e) => setNewPetBreed(e.target.value)}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-st-muted mb-1">Nome do Tutor Responsável *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Mariana Silva Santos"
+                    value={newPetCustomerName}
+                    onChange={(e) => setNewPetCustomerName(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">Peso (kg)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Ex: 12.5"
+                      value={newPetWeight}
+                      onChange={(e) => setNewPetWeight(e.target.value)}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">Sexo</label>
+                    <select
+                      value={newPetSex}
+                      onChange={(e) => setNewPetSex(e.target.value as 'M' | 'F')}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                    >
+                      <option value="M">Macho</option>
+                      <option value="F">Fêmea</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-st-muted mb-1">URL da Foto (Opcional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={newPetPhotoUrl}
+                    onChange={(e) => setNewPetPhotoUrl(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-st-muted mb-1">Observações Médicas / Comportamentais</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Ex: Alérgico a penicilina, calmo..."
+                    value={newPetNotes}
+                    onChange={(e) => setNewPetNotes(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                  />
+                </div>
+
+                <div className="pt-3 flex items-center justify-end gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddPetModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl border border-st-border text-st-muted hover:text-st-arctic font-semibold whitespace-nowrap cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-semibold shadow-glow whitespace-nowrap cursor-pointer border-none"
+                  >
+                    Salvar Pet
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </ClientPortal>
+      )}
     </div>
   );
 }

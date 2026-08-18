@@ -6,6 +6,7 @@ import { StaffUser, UserRole } from '@/types/database';
 import { ALL_MENU_KEYS, getRolePresetPermissions, StaffPermissionRule, upsertStaffPermissions } from '@/lib/data/permissions';
 import { PlanGate } from '@/components/ui/PlanGate';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
+import { ClientPortal } from '@/components/ui/ClientPortal';
 
 export default function StaffPage() {
   const { canAddStaff } = usePlanLimits();
@@ -19,6 +20,18 @@ export default function StaffPage() {
   const [inviteRole, setInviteRole] = useState<UserRole>('vet');
   const [inviteSent, setInviteSent] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Lock background scroll when modal is open
+  React.useEffect(() => {
+    if (isInviteModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isInviteModalOpen]);
 
   const handleSelectStaff = (staff: StaffUser) => {
     setSelectedStaff(staff);
@@ -289,81 +302,83 @@ export default function StaffPage() {
         </div>
       </div>
 
-      {/* Invite Staff Modal */}
+      {/* Invite Staff Modal (Centralizado + Lock de Scroll + Portal) */}
       {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card rounded-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
-              <h3 className="font-bold text-st-arctic text-base">Convidar Novo Funcionário</h3>
-              <button onClick={() => setIsInviteModalOpen(false)} className="text-st-muted hover:text-st-arctic">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {inviteSent ? (
-              <div className="py-8 text-center space-y-2">
-                <Check className="w-10 h-10 text-st-success mx-auto" />
-                <h4 className="font-bold text-st-arctic">Convite Enviado!</h4>
-                <p className="text-xs text-st-muted">Um e-mail de acesso foi enviado para {inviteEmail}.</p>
+        <ClientPortal>
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-none">
+            <div className="relative my-auto w-full max-w-md card rounded-2xl p-5 sm:p-6 shadow-2xl animate-fade-up max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between border-b border-st-border/40 pb-3">
+                <h3 className="font-bold text-st-arctic text-base">Convidar Novo Funcionário</h3>
+                <button onClick={() => setIsInviteModalOpen(false)} className="text-st-muted hover:text-st-arctic">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            ) : (
-              <form onSubmit={handleSendInvite} className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-semibold text-st-muted mb-1">Nome Completo</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: Roberto Lima"
-                    value={inviteName}
-                    onChange={(e) => setInviteName(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic"
-                  />
-                </div>
 
-                <div>
-                  <label className="block font-semibold text-st-muted mb-1">E-mail Corporativo</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="roberto@petia.com.br"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic"
-                  />
+              {inviteSent ? (
+                <div className="py-8 text-center space-y-2">
+                  <Check className="w-10 h-10 text-st-success mx-auto" />
+                  <h4 className="font-bold text-st-arctic">Convite Enviado!</h4>
+                  <p className="text-xs text-st-muted">Um e-mail de acesso foi enviado para {inviteEmail}.</p>
                 </div>
+              ) : (
+                <form onSubmit={handleSendInvite} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">Nome Completo</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: Roberto Lima"
+                      value={inviteName}
+                      onChange={(e) => setInviteName(e.target.value)}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block font-semibold text-st-muted mb-1">Cargo Inicial</label>
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as UserRole)}
-                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
-                  >
-                    <option value="manager">Manager (Gerente)</option>
-                    <option value="vet">Veterinário(a)</option>
-                    <option value="attendant">Atendente / Recepção</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">E-mail Corporativo</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="roberto@petia.com.br"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic"
+                    />
+                  </div>
 
-                <div className="pt-3 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsInviteModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-st-border text-st-muted font-semibold whitespace-nowrap shrink-0"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl bg-st-electric text-white font-semibold shadow-glow whitespace-nowrap shrink-0"
-                  >
-                    Enviar Convite
-                  </button>
-                </div>
-              </form>
-            )}
+                  <div>
+                    <label className="block font-semibold text-st-muted mb-1">Cargo Inicial</label>
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value as UserRole)}
+                      className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                    >
+                      <option value="manager">Manager (Gerente)</option>
+                      <option value="vet">Veterinário(a)</option>
+                      <option value="attendant">Atendente / Recepção</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-3 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsInviteModalOpen(false)}
+                      className="px-4 py-2 rounded-xl border border-st-border text-st-muted font-semibold whitespace-nowrap shrink-0"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-xl bg-st-electric text-white font-semibold shadow-glow whitespace-nowrap shrink-0"
+                    >
+                      Enviar Convite
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
-        </div>
+        </ClientPortal>
       )}
     </div>
     </PlanGate>

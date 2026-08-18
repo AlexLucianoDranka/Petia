@@ -266,18 +266,74 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbars (Global & Utilities) */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--st-navy);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--st-steel);
-  border-radius: 2px;
+  background: rgba(139, 168, 200, 0.25);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--st-electric);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 168, 200, 0.3) transparent;
+}
+
+/* Dedicated Sidebar / Custom Scrollbar Utility */
+.sidebar-scrollbar,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.4) transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.35);
+  border-radius: 9999px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--st-electric);
+}
+
+html.light .sidebar-scrollbar,
+html.light .custom-scrollbar {
+  scrollbar-color: rgba(37, 99, 235, 0.35) transparent;
+}
+
+html.light .sidebar-scrollbar::-webkit-scrollbar-thumb,
+html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(37, 99, 235, 0.35);
+}
+
+html.light .sidebar-scrollbar::-webkit-scrollbar-thumb:hover,
+html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--st-electric);
 }
 
 /* ─── Utilitários ───────────────────────────────────────────── */
