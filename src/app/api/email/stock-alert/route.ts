@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       : `<li>Itens com estoque abaixo do mínimo recomendado.</li>`;
 
     const html = buildKmZeroEmailTemplate({
-      title: `Alerta de Estoque Crítico 🚨`,
+      title: `Alerta de Estoque Crítico`,
       badge: 'ESTOQUE & INSUMOS',
       name,
       bodyHtml: `
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: email,
-        subject: `🚨 Alerta de Estoque Crítico — ${clinicName || 'Petia'}`,
+        subject: `Alerta de Estoque Crítico — ${clinicName || 'Petia'}`,
         html,
       }),
     });

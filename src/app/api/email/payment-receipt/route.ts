@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: email,
-        subject: `🧾 Comprovante de Pagamento — Plano ${planName} (${billingCycle === 'yearly' ? 'Anual' : 'Mensal'})`,
+        subject: `Comprovante de Pagamento — Plano ${planName} (${billingCycle === 'yearly' ? 'Anual' : 'Mensal'})`,
         html,
       }),
     });

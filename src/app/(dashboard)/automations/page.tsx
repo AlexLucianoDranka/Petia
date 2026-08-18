@@ -61,13 +61,13 @@ export default function AutomationsPage() {
   };
 
   const handleSendBirthdayWhatsApp = (pet: any) => {
-    const text = `🎉 Parabéns pro ${pet.name}! A equipe da Petia deseja um aniversário cheio de petiscos e brincadeiras! Ganhe 15% de desc. na próxima visita com o cupom NIVERPET. 🐾🎈`;
+    const text = `Parabéns pro ${pet.name}! A equipe da Petia deseja um aniversário cheio de alegria! Ganhe 15% de desc. na próxima visita com o cupom NIVERPET.`;
     const url = whatsappService.generateWhatsAppClickUrl(pet.customer_phone || '11999999999', text);
     window.open(url, '_blank');
   };
 
   const handleSendReactivationWhatsApp = (cust: any) => {
-    const text = `Olá ${cust.name}! Sentimos sua falta aqui no Petia! Faz um tempo que não vemos você por aqui. Agende um check-up com 10% de desconto essa semana! 🐶❤️`;
+    const text = `Olá ${cust.name}! Sentimos sua falta aqui no Petia! Faz um tempo que não vemos você por aqui. Agende um check-up com 10% de desconto essa semana!`;
     const url = whatsappService.generateWhatsAppClickUrl(cust.phone || '11999999999', text);
     window.open(url, '_blank');
   };
@@ -174,7 +174,7 @@ export default function AutomationsPage() {
               {birthdayPets.map((pet) => (
                 <div key={pet.id} className="p-3.5 rounded-xl bg-st-surface border border-st-border/60 flex items-center justify-between gap-3">
                   <div>
-                    <h4 className="font-bold text-st-arctic text-sm">{pet.name} 🎂</h4>
+                    <h4 className="font-bold text-st-arctic text-sm">{pet.name}</h4>
                     <p className="text-st-muted">Tutor: {pet.customer_name} • {pet.breed}</p>
                   </div>
                   <button

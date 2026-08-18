@@ -39,7 +39,7 @@ export function Sidebar() {
       <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl gradient-brand flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
-            <span className="text-xl">🐾</span>
+            <Dog className="w-5 h-5 text-white" />
           </div>
           <div>
             <h1 className="font-bold text-lg tracking-tight flex items-center gap-1 text-white">

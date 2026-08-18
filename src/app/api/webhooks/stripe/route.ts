@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         if (session.customer_details?.email) {
           await sendEmail(
             session.customer_details.email,
-            '🎉 Sua assinatura Petia está ativa!',
+            'Sua assinatura Petia está ativa!',
             `
             <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 32px;">
               <h2 style="color: #1e3a5f;">Bem-vindo ao Petia!</h2>
@@ -150,7 +150,7 @@ export async function POST(req: Request) {
           if ((invoice as any).customer_email) {
             await sendEmail(
               (invoice as any).customer_email,
-              '⚠️ Falha no pagamento da sua assinatura Petia',
+              'Falha no pagamento da sua assinatura Petia',
               `
               <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 32px;">
                 <h2 style="color: #d32f2f;">Pagamento não processado</h2>

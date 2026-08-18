@@ -33,8 +33,25 @@ const INITIAL_CLUB_PLANS: ClubPlan[] = [
 ];
 
 export default function SubscriptionsPage() {
-  const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [clubPlans, setClubPlans] = useState<ClubPlan[]>(INITIAL_CLUB_PLANS);
+  const [subscriptions, setSubscriptions] = useState<any[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = localStorage.getItem('petia_subscriptions');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return [];
+  });
+  const [clubPlans, setClubPlans] = useState<ClubPlan[]>(() => {
+    if (typeof window === 'undefined') return INITIAL_CLUB_PLANS;
+    try {
+      const saved = localStorage.getItem('petia_club_plans');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return INITIAL_CLUB_PLANS;
+  });
   const [searchTerm, setSearchTerm] = useState('');
 
   // Modals
@@ -66,6 +83,13 @@ export default function SubscriptionsPage() {
       sub.plan_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const saveClubPlans = (plans: ClubPlan[]) => {
+    setClubPlans(plans);
+    try {
+      localStorage.setItem('petia_club_plans', JSON.stringify(plans));
+    } catch (_) {}
+  };
+
   const handleCreateClubPlan = (e: React.FormEvent) => {
     e.preventDefault();
     const created: ClubPlan = {
@@ -75,7 +99,7 @@ export default function SubscriptionsPage() {
       interval: 'monthly',
       features: newFeatures.split(',').map((f) => f.trim()).filter(Boolean),
     };
-    setClubPlans([...clubPlans, created]);
+    saveClubPlans([...clubPlans, created]);
     setIsNewPlanModalOpen(false);
     setNewTitle('');
     setNewPrice('');

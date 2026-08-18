@@ -108,9 +108,16 @@ export function Header({ onOpenQuickAppointment, onToggleMobileMenu }: HeaderPro
   const router = useRouter();
 
   useEffect(() => {
-    setNotifications(buildNotifications());
+    const buildWithReadState = () => {
+      const notes = buildNotifications();
+      try {
+        const readIds = new Set<string>(JSON.parse(localStorage.getItem('petia_read_notifications') || '[]'));
+        return notes.map((n) => ({ ...n, read: readIds.has(n.id) }));
+      } catch (_) { return notes; }
+    };
+    setNotifications(buildWithReadState());
 
-    const refresh = () => setNotifications(buildNotifications());
+    const refresh = () => setNotifications(buildWithReadState());
     window.addEventListener('petia_user_profile_updated', refresh);
     window.addEventListener('petia_data_updated', refresh);
     return () => {
@@ -156,13 +163,13 @@ export function Header({ onOpenQuickAppointment, onToggleMobileMenu }: HeaderPro
       pets
         .filter((p: any) => p.name?.toLowerCase().includes(q) || p.breed?.toLowerCase().includes(q))
         .slice(0, 3)
-        .forEach((p: any) => results.push({ label: `🐾 ${p.name} (${p.breed})`, href: '/pets', type: 'Pet' }));
+        .forEach((p: any) => results.push({ label: `${p.name} (${p.breed || 'SRD'})`, href: '/pets', type: 'Pet' }));
 
       const customers = JSON.parse(localStorage.getItem('petia_customers') || '[]');
       customers
         .filter((c: any) => c.name?.toLowerCase().includes(q) || c.phone?.includes(q))
         .slice(0, 3)
-        .forEach((c: any) => results.push({ label: `👤 ${c.name}`, href: '/tutores', type: 'Tutor' }));
+        .forEach((c: any) => results.push({ label: `${c.name}`, href: '/tutores', type: 'Tutor' }));
     } catch (_) {}
 
     setSearchResults(results);
@@ -171,7 +178,14 @@ export function Header({ onOpenQuickAppointment, onToggleMobileMenu }: HeaderPro
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      try {
+        const readIds = updated.map((n) => n.id);
+        localStorage.setItem('petia_read_notifications', JSON.stringify(readIds));
+      } catch (_) {}
+      return updated;
+    });
   };
 
   const NotifIcon = ({ type }: { type: string }) => {

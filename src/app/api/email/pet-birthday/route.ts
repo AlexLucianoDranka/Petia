@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://petia.com.br';
 
     const html = buildKmZeroEmailTemplate({
-      title: `Parabéns pro ${petName}! 🎈🎉`,
+      title: `Parabéns pro ${petName}!`,
       badge: 'ANIVERSÁRIO DO PET',
       name: customerName,
       bodyHtml: `
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: customerEmail,
-        subject: `🎉 Feliz Aniversário pro ${petName}! Ganhe um presente especial — ${clinicName || 'Petia'}`,
+        subject: `Feliz Aniversário pro ${petName}! Ganhe um presente especial — ${clinicName || 'Petia'}`,
         html,
       }),
     });

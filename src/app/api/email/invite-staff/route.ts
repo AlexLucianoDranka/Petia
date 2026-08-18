@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: email,
-        subject: `🐶 Convite de Acesso no Petia — ${clinicName}`,
+        subject: `Convite de Acesso no Petia — ${clinicName}`,
         html,
       }),
     });

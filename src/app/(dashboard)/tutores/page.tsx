@@ -68,10 +68,19 @@ export default function TutoresPage() {
   };
 
   const handleDeleteTutor = (id: string, name: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir o tutor "${name}"?`)) {
+    if (window.confirm(`Tem certeza que deseja excluir o tutor "${name}"? Os pets vinculados a este tutor também serão removidos.`)) {
       const updated = tutores.filter((t) => t.id !== id);
       saveTutoresToStorage(updated);
-      showToast('Tutor removido!', 'info');
+
+      // Remove pets vinculados ao tutor pelo customer_name
+      try {
+        const pets = JSON.parse(localStorage.getItem('petia_pets') || '[]');
+        const filteredPets = pets.filter((p: any) => p.customer_name !== name);
+        localStorage.setItem('petia_pets', JSON.stringify(filteredPets));
+        window.dispatchEvent(new Event('petia_data_updated'));
+      } catch (_) {}
+
+      showToast('Tutor e pets vinculados removidos!', 'info');
     }
   };
 

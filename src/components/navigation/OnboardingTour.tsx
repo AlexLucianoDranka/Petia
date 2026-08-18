@@ -15,14 +15,14 @@ interface TourStep {
 
 const TOUR_STEPS: TourStep[] = [
   {
-    title: 'Bem-vindo ao Petia! 🐾',
+    title: 'Bem-vindo ao Petia!',
     subtitle: 'Sua clínica veterinária pronta para crescer',
     description:
       'Sua conta foi criada com sucesso! Você tem 7 dias grátis de acesso total. Seu painel já está configurado e pronto para você cadastrar seus primeiros clientes e pets.',
     icon: Sparkles,
   },
   {
-    title: 'Agenda Visual & Check-in 📅',
+    title: 'Agenda Visual & Check-in',
     subtitle: 'Controle total de horários e atendimento no balcão',
     description:
       'Gerencie consultas, procedimentos e banho & tosa em um quadro intuitivo. Envie lembretes via WhatsApp para os tutores em 1 clique.',
@@ -30,7 +30,7 @@ const TOUR_STEPS: TourStep[] = [
     highlightRoute: '/agenda',
   },
   {
-    title: 'Pets, Prontuário & Raio-X 🐶',
+    title: 'Pets, Prontuário & Raio-X',
     subtitle: 'Histórico clínico completo e seguro',
     description:
       'Cada pet possui sua carteira digital com QR Code, linha do tempo de vacinas e ferramenta interativa para desenhar anotações sobre imagens de raio-x e ultrassom.',
@@ -38,7 +38,7 @@ const TOUR_STEPS: TourStep[] = [
     highlightRoute: '/pets',
   },
   {
-    title: '7 Dias de Trial Ativado 💳',
+    title: '7 Dias de Trial Ativado',
     subtitle: 'Acesso liberado a todas as ferramentas',
     description:
       'Sua clínica iniciou com 7 dias de avaliação gratuita sem compromisso. Explore todos os módulos e escolha o plano ideal para o seu negócio a qualquer momento.',

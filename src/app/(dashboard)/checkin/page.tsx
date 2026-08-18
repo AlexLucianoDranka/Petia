@@ -92,14 +92,36 @@ export default function CheckinPage() {
   };
 
   const handleCheckoutAndPay = (item: CheckinItem) => {
-    setCompletedInvoice({
+    const invoice = {
       ...item,
       invoiceNumber: `INV-${Math.floor(100000 + Math.random() * 900000)}`,
       paidAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    });
+    };
+    setCompletedInvoice(invoice);
 
     const updated = activeQueue.filter((i) => i.id !== item.id);
     saveQueueToStorage(updated);
+
+    // Persiste no financeiro como receita (status paid)
+    try {
+      const existingInvoices = JSON.parse(localStorage.getItem('petia_invoices') || '[]');
+      const newInvoice = {
+        id: `inv-${Date.now()}`,
+        clinic_id: 'real-clinic',
+        customer_name: item.tutorName,
+        pet_name: item.petName,
+        service_type: item.service,
+        amount: item.price,
+        status: 'paid',
+        payment_method: 'balcao',
+        invoice_number: invoice.invoiceNumber,
+        created_at: new Date().toISOString(),
+        paid_at: new Date().toISOString(),
+      };
+      localStorage.setItem('petia_invoices', JSON.stringify([newInvoice, ...existingInvoices]));
+      window.dispatchEvent(new Event('petia_data_updated'));
+    } catch (_) {}
+
     showToast('Checkout concluído e cobrança gerada!', 'success');
   };
 

@@ -259,7 +259,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="text-xl font-extrabold text-st-arctic">Conta Criada com Sucesso! 📩</h3>
+                <h3 className="text-xl font-extrabold text-st-arctic">Conta Criada com Sucesso!</h3>
                 <p className="text-xs text-st-muted leading-relaxed max-w-sm mx-auto">
                   Enviamos um e-mail de confirmação para <strong className="text-st-arctic font-semibold">{confirmedEmailSent}</strong>.
                 </p>

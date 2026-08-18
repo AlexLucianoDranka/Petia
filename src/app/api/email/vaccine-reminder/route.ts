@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: customerEmail,
-        subject: `💉 Lembrete de Vacina do ${petName} — ${clinicName || 'Petia'}`,
+        subject: `Lembrete de Vacina do ${petName} — ${clinicName || 'Petia'}`,
         html,
       }),
     });

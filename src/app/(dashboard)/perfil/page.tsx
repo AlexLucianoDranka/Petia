@@ -34,6 +34,7 @@ import {
   Sparkles,
   Eye,
   EyeOff,
+  X,
 } from 'lucide-react';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { formatCPF, formatPhone } from '@/lib/utils';
@@ -665,7 +666,7 @@ export default function PerfilPage() {
                 <AlertTriangle className="w-5 h-5 shrink-0" /> Confirmar Exclusão de Conta
               </h3>
               <button onClick={() => setShowDeleteModal(false)} className="text-st-muted hover:text-st-arctic p-1">
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

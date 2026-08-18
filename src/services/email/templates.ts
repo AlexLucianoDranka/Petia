@@ -35,7 +35,7 @@ export function buildKmZeroEmailTemplate(options: EmailLayoutOptions): string {
             <td style="background:linear-gradient(135deg, #0f1f38 0%, #1e3a5f 50%, #2b5baa 100%);padding:36px 32px;text-align:center;border-bottom:1px solid rgba(59,130,246,0.2);">
               <div style="display:inline-block;padding:8px 16px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:30px;margin-bottom:12px;">
                 <span style="font-size:12px;font-weight:800;color:#3b82f6;letter-spacing:1px;text-transform:uppercase;">
-                  🐾 PETIA • ${badge || 'VETERINÁRIA & PET SHOP'}
+                  PETIA • ${badge || 'VETERINÁRIA & PET SHOP'}
                 </span>
               </div>
               <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;">
@@ -47,7 +47,7 @@ export function buildKmZeroEmailTemplate(options: EmailLayoutOptions): string {
           <!-- Main Body Content -->
           <tr>
             <td style="padding:36px 32px;">
-              ${name ? `<h2 style="color:#ffffff;font-size:19px;font-weight:700;margin:0 0 16px;">Olá, ${name.split(' ')[0]}! 👋</h2>` : ''}
+              ${name ? `<h2 style="color:#ffffff;font-size:19px;font-weight:700;margin:0 0 16px;">Olá, ${name.split(' ')[0]}!</h2>` : ''}
               
               <div style="color:#8ba8c8;font-size:14px;line-height:1.7;margin-bottom:24px;">
                 ${bodyHtml}

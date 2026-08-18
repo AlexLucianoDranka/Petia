@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: email,
-        subject: `🐾 Bem-vindo ao Petia, ${name.split(' ')[0]}!`,
+        subject: `Bem-vindo ao Petia, ${name.split(' ')[0]}!`,
         html,
       }),
     });

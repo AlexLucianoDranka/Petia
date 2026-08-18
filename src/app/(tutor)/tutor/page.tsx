@@ -1,20 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Syringe, Dog, Calendar, CreditCard, Heart, ShieldCheck, Lock, Crown, ArrowRight, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Syringe, Dog, Calendar, CreditCard, Heart, Lock, Crown, ArrowRight, Sparkles, CalendarPlus } from 'lucide-react';
 import Link from 'next/link';
 import { PLANS } from '@/lib/plans';
 import { useCurrentPlan } from '@/hooks/useCurrentPlan';
+import { getScopedData } from '@/lib/data/clinicDataScope';
 
 function TutorPlanGate({ children }: { children: React.ReactNode }) {
   const { isTrial, trialDaysRemaining, planType, isLoading } = useCurrentPlan();
 
-  // Mostra conteúdo enquanto carrega (evita flash)
   if (isLoading) {
     return <div className="min-h-screen bg-st-navy" />;
   }
 
-  // Trial ativo → acesso total a TODAS as funcionalidades
   const PLAN_ORDER = ['basico', 'essencial', 'profissional', 'ouro', 'platina', 'diamond'];
   const hasAccess =
     (isTrial && trialDaysRemaining > 0) ||
@@ -64,13 +63,31 @@ function TutorPlanGate({ children }: { children: React.ReactNode }) {
 
 export default function TutorPortalPage() {
   const [activeTab, setActiveTab] = useState<'pets' | 'appointments' | 'subscriptions'>('pets');
-  const tutorPets: any[] = [];
-  const tutorAppointments: any[] = [];
+
+  // Dados reais do localStorage
+  const [tutorPets, setTutorPets] = useState<any[]>([]);
+  const [tutorAppointments, setTutorAppointments] = useState<any[]>([]);
+  const [medicalRecords, setMedicalRecords] = useState<any[]>([]);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    try {
+      const savedProfile = localStorage.getItem('petia_user_profile');
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        setUserName(profile.name || profile.email?.split('@')[0] || '');
+      }
+    } catch (_) {}
+
+    setTutorPets(getScopedData('petia_pets'));
+    setTutorAppointments(getScopedData('petia_appointments'));
+    setMedicalRecords(getScopedData('petia_medical_records'));
+  }, []);
 
   return (
     <TutorPlanGate>
       <div className="min-h-screen bg-st-navy text-st-arctic pb-12">
-        {/* Mobile Top Header */}
+        {/* Header */}
         <header className="bg-st-surface border-b border-st-border p-6 rounded-b-2xl shadow-md space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -89,9 +106,14 @@ export default function TutorPortalPage() {
 
           <div className="space-y-1">
             <h2 className="text-2xl font-extrabold text-white flex items-center gap-2">
-              Olá, Mariana <Heart className="w-5 h-5 text-st-electric inline" />
+              {userName ? `Olá, ${userName}` : 'Bem-vindo ao Portal'}{' '}
+              <Heart className="w-5 h-5 text-st-electric inline" />
             </h2>
-            <p className="text-st-muted text-xs">Acompanhe a saúde e vacinas de Thor e Luna no Petia</p>
+            <p className="text-st-muted text-xs">
+              {tutorPets.length > 0
+                ? `Acompanhe a saúde e vacinas de ${tutorPets.map((p) => p.name).slice(0, 2).join(' e ')} no Petia`
+                : 'Acompanhe a saúde dos seus pets e agendamentos na clínica'}
+            </p>
           </div>
         </header>
 
@@ -104,7 +126,7 @@ export default function TutorPortalPage() {
                 activeTab === 'pets' ? 'bg-st-electric text-white shadow-glow-sm' : 'hover:text-st-arctic'
               }`}
             >
-              Meus Pets (2)
+              Meus Pets ({tutorPets.length})
             </button>
             <button
               onClick={() => setActiveTab('appointments')}
@@ -112,7 +134,7 @@ export default function TutorPortalPage() {
                 activeTab === 'appointments' ? 'bg-st-electric text-white shadow-glow-sm' : 'hover:text-st-arctic'
               }`}
             >
-              Agendamentos
+              Agendamentos ({tutorAppointments.length})
             </button>
             <button
               onClick={() => setActiveTab('subscriptions')}
@@ -124,83 +146,135 @@ export default function TutorPortalPage() {
             </button>
           </div>
 
-          {/* Tab 1: Pets & Digital Vaccine Cards */}
+          {/* Tab 1: Pets & Carteira de Vacinação Digital */}
           {activeTab === 'pets' && (
             <div className="space-y-4">
-              {tutorPets.map((pet) => {
-                const records: any[] = [];
+              {tutorPets.length === 0 ? (
+                <div className="card rounded-2xl p-10 text-center space-y-3">
+                  <Dog className="w-12 h-12 text-st-muted/40 mx-auto" />
+                  <h3 className="font-bold text-st-arctic text-base">Nenhum pet cadastrado</h3>
+                  <p className="text-xs text-st-muted">
+                    Peça à clínica para cadastrar seus pets para acompanhar a carteira de vacinação digital.
+                  </p>
+                  <Link
+                    href="/pets"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-st-electric hover:bg-st-steel text-white font-semibold text-xs shadow-glow"
+                  >
+                    <Dog className="w-4 h-4" />
+                    Cadastrar Pet
+                  </Link>
+                </div>
+              ) : (
+                tutorPets.map((pet) => {
+                  const petRecords = medicalRecords.filter((r: any) => r.pet_id === pet.id);
+                  return (
+                    <div key={pet.id} className="card rounded-2xl p-5 space-y-4">
+                      <div className="flex items-center gap-3 border-b border-st-border/40 pb-3">
+                        {pet.photo_url ? (
+                          <img
+                            src={pet.photo_url}
+                            alt={pet.name}
+                            className="w-14 h-14 rounded-xl object-cover border border-st-border shrink-0"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-st-electric/20 border border-st-electric/30 flex items-center justify-center shrink-0">
+                            <Dog className="w-7 h-7 text-st-electric" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-extrabold text-st-arctic text-lg">{pet.name}</h3>
+                          <p className="text-xs text-st-electric font-semibold">{pet.species} • {pet.breed || 'SRD'}</p>
+                          {pet.weight ? (
+                            <p className="text-[11px] text-st-muted font-medium">Peso: {pet.weight} kg</p>
+                          ) : null}
+                        </div>
+                      </div>
 
-                return (
-                  <div key={pet.id} className="card rounded-2xl p-5 space-y-4">
-                    <div className="flex items-center gap-3 border-b border-st-border/40 pb-3">
-                      <img
-                        src={pet.photo_url}
-                        alt={pet.name}
-                        className="w-14 h-14 rounded-xl object-cover border border-st-border"
-                      />
-                      <div>
-                        <h3 className="font-extrabold text-st-arctic text-lg">{pet.name}</h3>
-                        <p className="text-xs text-st-electric font-semibold">{pet.species} • {pet.breed}</p>
-                        <p className="text-[11px] text-st-muted font-medium">Peso: {pet.weight} kg</p>
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-xs text-st-arctic flex items-center gap-1.5">
+                          <Syringe className="w-4 h-4 text-st-electric" />
+                          <span>
+                            Carteira Digital de Vacinação ({petRecords.filter((r: any) => r.type === 'vaccine').length} registros)
+                          </span>
+                        </h4>
+
+                        {petRecords.length === 0 ? (
+                          <p className="text-xs text-st-muted p-3 bg-st-surface/50 rounded-xl border border-st-border/40">
+                            Nenhum registro clínico disponível ainda para este pet.
+                          </p>
+                        ) : (
+                          petRecords.slice(0, 5).map((rec: any) => (
+                            <div key={rec.id} className="p-3 rounded-xl bg-st-navy border border-st-border text-xs space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-st-arctic">{rec.description}</span>
+                                <span className="text-[9px] font-bold bg-st-success/20 text-st-success border border-st-success/30 px-2 py-0.5 rounded-full uppercase">
+                                  {rec.type}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-st-muted">Data: {rec.date} — Vet: {rec.vet_name}</p>
+                              {rec.next_due_date && (
+                                <p className="text-[11px] font-bold text-st-electric mt-1">
+                                  Próximo Reforço: {rec.next_due_date}
+                                </p>
+                              )}
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-xs text-st-arctic flex items-center gap-1.5">
-                        <Syringe className="w-4 h-4 text-st-electric" />
-                        <span>Carteira Digital de Vacinação</span>
-                      </h4>
-
-                      {records.map((rec) => (
-                        <div key={rec.id} className="p-3 rounded-xl bg-st-navy border border-st-border text-xs space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-st-arctic">{rec.description}</span>
-                            <span className="text-[9px] font-bold bg-st-success/20 text-st-success border border-st-success/30 px-2 py-0.5 rounded-full">
-                              APLICADA
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-st-muted">Data: {rec.date} — Vet: {rec.vet_name}</p>
-                          {rec.next_due_date && (
-                            <p className="text-[11px] font-bold text-st-electric mt-1">
-                              Próximo Reforço: {rec.next_due_date}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           )}
 
-          {/* Tab 2: Appointments */}
+          {/* Tab 2: Agendamentos */}
           {activeTab === 'appointments' && (
             <div className="space-y-4">
               <div className="flex justify-end">
-                <button className="py-2.5 px-4 rounded-xl bg-st-electric hover:bg-st-steel text-white font-semibold text-xs shadow-glow">
-                  + Solicitar Novo Agendamento
-                </button>
+                <Link
+                  href="/agenda"
+                  className="flex items-center gap-2 py-2.5 px-4 rounded-xl bg-st-electric hover:bg-st-steel text-white font-semibold text-xs shadow-glow"
+                >
+                  <CalendarPlus className="w-4 h-4" />
+                  Solicitar Novo Agendamento
+                </Link>
               </div>
 
-              {tutorAppointments.map((apt) => (
-                <div key={apt.id} className="card rounded-2xl p-5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-extrabold text-st-arctic text-base">{apt.pet_name}</h3>
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-st-success/20 text-st-success border border-st-success/30">
-                      {apt.status.toUpperCase()}
-                    </span>
-                  </div>
-                  <p className="text-xs text-st-muted font-medium">Serviço: {apt.service_type}</p>
-                  <p className="text-xs font-mono font-bold text-st-electric">
-                    Data: {new Date(apt.scheduled_at).toLocaleString('pt-BR')}
+              {tutorAppointments.length === 0 ? (
+                <div className="card rounded-2xl p-10 text-center space-y-3">
+                  <Calendar className="w-12 h-12 text-st-muted/40 mx-auto" />
+                  <h3 className="font-bold text-st-arctic text-base">Nenhum agendamento encontrado</h3>
+                  <p className="text-xs text-st-muted">
+                    Solicite um agendamento através do botão acima ou entre em contato com a clínica.
                   </p>
                 </div>
-              ))}
+              ) : (
+                tutorAppointments.map((apt) => (
+                  <div key={apt.id} className="card rounded-2xl p-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-extrabold text-st-arctic text-base">{apt.pet_name}</h3>
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                        apt.status === 'confirmed'
+                          ? 'bg-st-success/20 text-st-success border-st-success/30'
+                          : apt.status === 'done'
+                          ? 'bg-st-surface-2 text-st-muted border-st-border'
+                          : 'bg-st-warning/20 text-st-warning border-st-warning/30'
+                      }`}>
+                        {apt.status === 'confirmed' ? 'CONFIRMADO' : apt.status === 'done' ? 'CONCLUÍDO' : 'AGENDADO'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-st-muted font-medium">Serviço: {apt.service_type}</p>
+                    <p className="text-xs font-mono font-bold text-st-electric">
+                      Data: {new Date(apt.scheduled_at).toLocaleString('pt-BR')}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
-          {/* Tab 3: Subscriptions */}
+          {/* Tab 3: Assinaturas */}
           {activeTab === 'subscriptions' && (
             <div className="card rounded-2xl p-6 text-center space-y-4">
               <div className="w-12 h-12 rounded-xl bg-st-electric/20 text-st-electric flex items-center justify-center mx-auto border border-st-electric/30">
@@ -210,9 +284,12 @@ export default function TutorPortalPage() {
               <p className="text-xs text-st-muted">
                 Assine banho semanal com desconto automático no cartão de crédito via Stripe.
               </p>
-              <button className="w-full py-3 rounded-xl bg-st-electric hover:bg-st-steel text-white font-bold text-xs shadow-glow">
+              <Link
+                href="/planos"
+                className="block w-full py-3 rounded-xl bg-st-electric hover:bg-st-steel text-white font-bold text-xs shadow-glow text-center"
+              >
                 Ver Planos de Assinatura
-              </button>
+              </Link>
             </div>
           )}
         </main>

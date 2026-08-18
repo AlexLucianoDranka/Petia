@@ -119,7 +119,13 @@ export default function AvaliacoesDashboardPage() {
                   : 'bg-st-surface text-st-muted hover:text-st-arctic border border-st-border'
               }`}
             >
-              {ratingVal === 'all' ? 'Todas' : `${ratingVal} ★`}
+              {ratingVal === 'all' ? (
+                'Todas'
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  {ratingVal} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" />
+                </span>
+              )}
             </button>
           ))}
         </div>

@@ -83,11 +83,11 @@ export default function AvaliacaoPublicaPage({ params }: { params: { id: string 
                 ))}
               </div>
               <span className="text-xs font-bold text-st-electric block">
-                {rating === 5 && '😍 Excelente!'}
-                {rating === 4 && '😀 Muito Bom!'}
-                {rating === 3 && '😐 Razoável'}
-                {rating === 2 && '🙁 Ruim'}
-                {rating === 1 && '😡 Muito Ruim'}
+                {rating === 5 && 'Excelente'}
+                {rating === 4 && 'Muito Bom'}
+                {rating === 3 && 'Razoável'}
+                {rating === 2 && 'Ruim'}
+                {rating === 1 && 'Muito Ruim'}
               </span>
             </div>
 

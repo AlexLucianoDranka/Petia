@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: process.env.RESEND_FROM_EMAIL || 'Petia <noreply@petia.com.br>',
         to: customerEmail,
-        subject: `📅 Confirmado: ${serviceType} de ${petName} — ${clinicName || 'Petia'}`,
+        subject: `Confirmado: ${serviceType} de ${petName} — ${clinicName || 'Petia'}`,
         html,
       }),
     });
