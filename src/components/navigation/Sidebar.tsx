@@ -121,7 +121,7 @@ export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
       {/* Mobile Drawer Overlay Backdrop */}
       {isDrawerOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in touch-none"
+          className="md:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm animate-fade-in touch-none"
           onClick={handleClose}
         />
       )}
@@ -129,7 +129,7 @@ export function Sidebar({ isOpen: externalIsOpen, onClose }: SidebarProps) {
       {/* Main Desktop & Drawer Sidebar com bordas retas e mais espaço para marca */}
       <aside
         className={cn(
-          'fixed top-0 bottom-0 left-0 z-50 w-72 bg-st-navy border-r border-st-border/10 flex flex-col transition-transform duration-300 ease-in-out h-full max-h-screen overflow-hidden shadow-sm pt-[env(safe-area-inset-top,0px)]',
+          'fixed top-0 bottom-0 left-0 z-[70] w-72 bg-st-navy border-r border-st-border/10 flex flex-col transition-transform duration-300 ease-in-out h-full max-h-screen overflow-hidden shadow-sm pt-[env(safe-area-inset-top,0px)]',
           isDrawerOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
