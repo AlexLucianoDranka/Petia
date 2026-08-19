@@ -16,6 +16,11 @@ export function TutorDashboardClient({ customer, clinic, pets, appointments, med
   const [activeTab, setActiveTab] = useState<'pets' | 'appointments' | 'subscriptions'>('pets');
   const userName = customer.name.split(' ')[0];
 
+  let clinicName = clinic.name;
+  if (clinicName === 'Minha Clínica Veterinária' && clinic.slug) {
+    clinicName = clinic.slug.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
   const handleLogout = async () => {
     // Apaga o cookie e recarrega a página
     document.cookie = 'petia_tutor_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -29,13 +34,13 @@ export function TutorDashboardClient({ customer, clinic, pets, appointments, med
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {clinic.logo_url ? (
-              <img src={clinic.logo_url} alt={clinic.name} className="w-10 h-10 rounded-xl object-cover bg-white" />
+              <img src={clinic.logo_url} alt={clinicName} className="w-10 h-10 rounded-xl object-cover bg-white" />
             ) : (
               <div className="w-10 h-10 rounded-xl bg-st-electric/20 text-st-electric border border-st-electric/30 flex items-center justify-center">
                 <Dog className="w-5 h-5" />
               </div>
             )}
-            <h1 className="font-extrabold text-lg tracking-tight text-white">{clinic.name}</h1>
+            <h1 className="font-extrabold text-lg tracking-tight text-white">{clinicName}</h1>
           </div>
           <button
             onClick={handleLogout}

@@ -41,13 +41,21 @@ export default function TutoresPage() {
     }
   };
 
-  const handleCreateTutor = (e: React.FormEvent) => {
+  const handleCreateTutor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newPhone.trim()) return;
 
+    // Obter o clinicId real que está salvo no local storage pelo login
+    const savedClinic = localStorage.getItem('petia_clinic_data');
+    const realClinicId = savedClinic ? JSON.parse(savedClinic).id : 'real-clinic';
+    const isRealClinic = realClinicId && realClinicId !== 'real-clinic';
+    
+    // Gerar um UUID real se for salvar no Supabase, senão usa o formato antigo
+    const tutorId = isRealClinic ? crypto.randomUUID() : `cust-${Date.now()}`;
+
     const newTutor: Customer = {
-      id: `cust-${Date.now()}`,
-      clinic_id: 'real-clinic',
+      id: tutorId,
+      clinic_id: realClinicId,
       name: newName.trim(),
       document: newDocument.trim() || undefined,
       phone: newPhone.trim(),
@@ -56,6 +64,28 @@ export default function TutoresPage() {
       whatsapp_opt_in: true,
       created_at: new Date().toISOString(),
     };
+
+    if (isRealClinic) {
+      try {
+        const { supabase } = await import('@/lib/supabaseClient');
+        const { error } = await supabase.from('customers').insert([{
+          id: newTutor.id,
+          clinic_id: newTutor.clinic_id,
+          name: newTutor.name,
+          phone: newTutor.phone,
+          email: newTutor.email,
+          document: newTutor.document,
+          address: newTutor.address,
+          whatsapp_opt_in: newTutor.whatsapp_opt_in,
+          created_at: newTutor.created_at
+        }]);
+        if (error) {
+          console.error('Erro ao salvar tutor no banco:', error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
     const updated = [newTutor, ...tutores];
     saveTutoresToStorage(updated);

@@ -226,7 +226,7 @@ export default function PetsPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleAddPet = (e: React.FormEvent) => {
+  const handleAddPet = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPetName.trim()) return;
 
@@ -236,9 +236,17 @@ export default function PetsPage() {
       return;
     }
 
+    // Obter o clinicId real que está salvo no local storage pelo login
+    const savedClinic = localStorage.getItem('petia_clinic_data');
+    const realClinicId = savedClinic ? JSON.parse(savedClinic).id : 'real-clinic';
+    const isRealClinic = realClinicId && realClinicId !== 'real-clinic';
+    
+    // Gerar um UUID real se for salvar no Supabase
+    const petId = isRealClinic ? crypto.randomUUID() : `pet-${Date.now()}`;
+
     const newPet: Pet = {
-      id: `pet-${Date.now()}`,
-      clinic_id: 'real-clinic',
+      id: petId,
+      clinic_id: realClinicId,
       customer_id: customer.id,
       customer_name: customer.name,
       name: newPetName.trim(),
@@ -251,6 +259,31 @@ export default function PetsPage() {
       photo_url: newPetPhotoUrl.trim() || undefined,
       created_at: new Date().toISOString(),
     };
+
+    if (isRealClinic) {
+      try {
+        const { supabase } = await import('@/lib/supabaseClient');
+        const { error } = await supabase.from('pets').insert([{
+          id: newPet.id,
+          clinic_id: newPet.clinic_id,
+          customer_id: newPet.customer_id,
+          name: newPet.name,
+          species: newPet.species,
+          breed: newPet.breed,
+          weight: newPet.weight,
+          sex: newPet.sex,
+          neutered: newPet.neutered,
+          notes: newPet.notes,
+          photo_url: newPet.photo_url,
+          created_at: newPet.created_at
+        }]);
+        if (error) {
+          console.error('Erro ao salvar pet no banco:', error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
     const updated = [newPet, ...pets];
     setPets(updated);

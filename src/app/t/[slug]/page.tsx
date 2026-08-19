@@ -40,8 +40,20 @@ export default function TutorLoginPage({ params }: { params: { slug: string } })
         return;
       }
 
-      setClinicName(clinic.name);
+      let displayName = clinic.name;
+      // Se o nome for o padrão do sistema, tentamos formatar o slug (ex: clinica-do-lucas -> Clinica Do Lucas)
+      if (displayName === 'Minha Clínica Veterinária' && params.slug) {
+        displayName = params.slug
+          .split('-')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+
+      setClinicName(displayName);
       setClinicLogo(clinic.logo_url);
+      
+      // Update document title dynamically
+      document.title = `Portal do Tutor | ${displayName}`;
     }
     loadClinic();
   }, [params.slug]);
