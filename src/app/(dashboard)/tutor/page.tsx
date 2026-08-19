@@ -197,9 +197,15 @@ export default function TutorSettingsPage() {
                 <p className="text-sm text-st-muted mt-1 mb-3">
                   Imprima um totem para colocar na recepção. Os tutores podem escanear para acessar rapidamente enquanto aguardam.
                 </p>
-                <button className="text-sm text-emerald-500 font-semibold hover:underline">
-                  Baixar QR Code (PDF)
-                </button>
+                <a 
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(portalUrl)}&margin=10`}
+                  target="_blank"
+                  rel="noreferrer"
+                  download="qrcode.png"
+                  className="text-sm text-emerald-500 font-semibold hover:underline"
+                >
+                  Baixar QR Code
+                </a>
               </div>
             </div>
           </div>

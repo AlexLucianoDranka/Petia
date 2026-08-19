@@ -32,8 +32,10 @@ export interface Customer {
   id: string;
   clinic_id: string;
   name: string;
+  document?: string;
   phone: string;
   email?: string;
+  address?: string;
   whatsapp_opt_in: boolean;
   created_at: string;
   pets_count?: number;

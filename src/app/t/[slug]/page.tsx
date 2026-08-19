@@ -185,7 +185,7 @@ export default function TutorLoginPage({ params }: { params: { slug: string } })
               <div className="space-y-2">
                 <h2 className="text-lg font-bold text-st-arctic">Acesse seus pets</h2>
                 <p className="text-sm text-st-muted">
-                  Digite o seu <strong>E-mail</strong> ou <strong>WhatsApp</strong> cadastrado na clínica para receber seu código de acesso. Sem senhas!
+                  Digite o seu <strong>E-mail</strong> cadastrado na <strong>{clinicName || 'clínica'}</strong> para receber seu código de acesso.
                 </p>
               </div>
 
@@ -193,11 +193,11 @@ export default function TutorLoginPage({ params }: { params: { slug: string } })
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-st-muted" />
                   <input
-                    type="text"
+                    type="email"
                     required
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
-                    placeholder="Seu E-mail ou WhatsApp"
+                    placeholder="Seu E-mail"
                     className="w-full pl-12 pr-4 py-3.5 rounded-xl text-base bg-st-surface/50 border border-st-border text-st-arctic focus:border-st-electric outline-none transition-all"
                   />
                 </div>

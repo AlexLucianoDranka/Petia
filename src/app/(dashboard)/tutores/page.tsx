@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Phone, Mail, MapPin, Dog, MessageSquare, X, Trash2 } from 'lucide-react';
+import { Users, Plus, Search, Phone, Mail, MapPin, Dog, MessageSquare, X, Trash2, FileText } from 'lucide-react';
 import { getScopedData } from '@/lib/data/clinicDataScope';
 import { Customer } from '@/types/database';
 import { showToast } from '@/components/ui/GlobalToastAndLoader';
@@ -18,6 +18,7 @@ export default function TutoresPage() {
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newDocument, setNewDocument] = useState('');
   const [newAddress, setNewAddress] = useState('');
 
   // Lock background scroll when modal is open
@@ -48,8 +49,10 @@ export default function TutoresPage() {
       id: `cust-${Date.now()}`,
       clinic_id: 'real-clinic',
       name: newName.trim(),
+      document: newDocument.trim() || undefined,
       phone: newPhone.trim(),
       email: newEmail.trim() || undefined,
+      address: newAddress.trim() || undefined,
       whatsapp_opt_in: true,
       created_at: new Date().toISOString(),
     };
@@ -61,6 +64,7 @@ export default function TutoresPage() {
     setNewName('');
     setNewPhone('');
     setNewEmail('');
+    setNewDocument('');
     setNewAddress('');
     setIsModalOpen(false);
 
@@ -187,13 +191,31 @@ export default function TutoresPage() {
               </div>
 
               {/* Inner Structured Box */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3.5 rounded-xl bg-st-surface/60 border border-st-border/50 text-xs">
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">
                     WhatsApp / Telefone
                   </span>
                   <span className="font-mono font-semibold text-st-arctic flex items-center gap-1">
                     <Phone className="w-3 h-3 text-st-electric shrink-0" /> {tutor.phone}
+                  </span>
+                </div>
+
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">
+                    CPF / Documento
+                  </span>
+                  <span className="font-mono font-semibold text-st-arctic flex items-center gap-1">
+                    <FileText className="w-3 h-3 text-st-electric shrink-0" /> {tutor.document || 'Não informado'}
+                  </span>
+                </div>
+
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold text-st-muted uppercase tracking-wider block">
+                    Endereço
+                  </span>
+                  <span className="font-medium text-st-arctic flex items-center gap-1 truncate" title={tutor.address || ''}>
+                    <MapPin className="w-3 h-3 text-st-electric shrink-0" /> {tutor.address || 'Não informado'}
                   </span>
                 </div>
 
@@ -267,6 +289,28 @@ export default function TutoresPage() {
                   placeholder="mariana@email.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-st-muted mb-1">CPF / Documento (Opcional)</label>
+                <input
+                  type="text"
+                  placeholder="000.000.000-00"
+                  value={newDocument}
+                  onChange={(e) => setNewDocument(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-st-muted mb-1">Endereço Completo (Opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Rua, Número, Bairro, Cidade - UF"
+                  value={newAddress}
+                  onChange={(e) => setNewAddress(e.target.value)}
                   className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
                 />
               </div>

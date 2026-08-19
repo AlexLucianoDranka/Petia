@@ -23,9 +23,11 @@ import {
   Upload,
   Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { getScopedData } from '@/lib/data/clinicDataScope';
 import { Pet, PetMedicalRecord } from '@/types/database';
+import { useCurrentPlan } from '@/hooks/useCurrentPlan';
 import { SolidaTechBadge } from '@/components/ui/SolidaTechBadge';
 import { showToast, startTopLoader, stopTopLoader } from '@/components/ui/GlobalToastAndLoader';
 import { ClientPortal } from '@/components/ui/ClientPortal';
@@ -41,6 +43,9 @@ interface ExamItem {
 }
 
 export default function PetsPage() {
+  const { planType, isTrial } = useCurrentPlan();
+  const canUploadPhoto = isTrial || planType !== 'basico';
+
   const [pets, setPets] = useState<Pet[]>(() => getScopedData('petia_pets'));
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
@@ -61,7 +66,8 @@ export default function PetsPage() {
   const [newPetName, setNewPetName] = useState('');
   const [newPetSpecies, setNewPetSpecies] = useState('Cão');
   const [newPetBreed, setNewPetBreed] = useState('');
-  const [newPetCustomerName, setNewPetCustomerName] = useState('');
+  const [newPetCustomerId, setNewPetCustomerId] = useState('');
+  const [customers, setCustomers] = useState<any[]>(() => getScopedData('petia_customers'));
   const [newPetWeight, setNewPetWeight] = useState('');
   const [newPetSex, setNewPetSex] = useState<'M' | 'F'>('M');
   const [newPetNotes, setNewPetNotes] = useState('');
@@ -184,15 +190,57 @@ export default function PetsPage() {
     setExams([newExam, ...exams]);
   };
 
+  const handleUploadPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 400; // compress to avoid localStorage quota
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setNewPetPhotoUrl(dataUrl);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAddPet = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPetName.trim()) return;
 
+    const customer = customers.find((c) => c.id === newPetCustomerId);
+    if (!customer) {
+      showToast('Por favor, selecione um tutor responsável.', 'error');
+      return;
+    }
+
     const newPet: Pet = {
       id: `pet-${Date.now()}`,
       clinic_id: 'real-clinic',
-      customer_id: `cust-${Date.now()}`,
-      customer_name: newPetCustomerName.trim() || 'Tutor Responsável',
+      customer_id: customer.id,
+      customer_name: customer.name,
       name: newPetName.trim(),
       species: newPetSpecies,
       breed: newPetBreed.trim() || 'SRD',
@@ -213,7 +261,7 @@ export default function PetsPage() {
 
     setNewPetName('');
     setNewPetBreed('');
-    setNewPetCustomerName('');
+    setNewPetCustomerId('');
     setNewPetWeight('');
     setNewPetNotes('');
     setNewPetPhotoUrl('');
@@ -732,15 +780,23 @@ export default function PetsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-st-muted mb-1">Nome do Tutor Responsável *</label>
-                  <input
-                    type="text"
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-st-muted">Tutor Responsável *</label>
+                    <Link href="/tutores" className="text-xs text-st-electric hover:underline font-bold">+ Novo Tutor</Link>
+                  </div>
+                  <select
                     required
-                    placeholder="Ex: Mariana Silva Santos"
-                    value={newPetCustomerName}
-                    onChange={(e) => setNewPetCustomerName(e.target.value)}
+                    value={newPetCustomerId}
+                    onChange={(e) => setNewPetCustomerId(e.target.value)}
                     className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
-                  />
+                  >
+                    <option value="">-- Selecione o tutor --</option>
+                    {customers.map((c: any) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.email || c.phone || 'Sem contato'})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -770,14 +826,31 @@ export default function PetsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-st-muted mb-1">URL da Foto (Opcional)</label>
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={newPetPhotoUrl}
-                    onChange={(e) => setNewPetPhotoUrl(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-st-surface border border-st-border text-st-arctic font-medium"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-st-muted">Foto do Pet (Opcional)</label>
+                    {!canUploadPhoto && (
+                      <span className="text-[10px] bg-amber-500/20 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">Plano Pro+</span>
+                    )}
+                  </div>
+                  {newPetPhotoUrl ? (
+                    <div className="relative inline-block mt-2">
+                      <img src={newPetPhotoUrl} alt="Pet" className="w-20 h-20 object-cover rounded-xl border border-st-border" />
+                      <button type="button" onClick={() => setNewPetPhotoUrl('')} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={!canUploadPhoto}
+                      onChange={handleUploadPhoto}
+                      className="w-full p-2.5 rounded-xl bg-st-surface border border-st-border text-st-muted text-sm font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-st-electric/20 file:text-st-electric hover:file:bg-st-electric/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  )}
+                  {!canUploadPhoto && (
+                    <p className="text-[10px] text-amber-500/80 mt-1 font-medium">Faça o upgrade para anexar fotos dos pets.</p>
+                  )}
                 </div>
 
                 <div>
