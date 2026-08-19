@@ -649,11 +649,71 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* 6. Info do Sistema & Ecossistema Sólida Tech */}
-      <div className="card p-6 rounded-2xl space-y-2 border border-st-border text-center">
-        <p className="text-xs font-bold text-st-arctic">Petia • Gestão Veterinária & Pet Shop {APP_VERSION}</p>
-        <p className="text-[11px] text-st-muted">Desenvolvido com excelência por Sólida Tech © 2026</p>
-        <div className="pt-2">
+      {/* 6. Card Minimalista de Informações do Sistema & Suporte */}
+      <div className="pt-8 border-t border-st-border/30">
+        <div className="card p-6 rounded-2xl border border-st-border/60 bg-st-surface/40 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-st-border/40 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-glow flex-shrink-0 flex items-center justify-center bg-st-navy border border-st-electric/30">
+                <img src="/icons/petshop-icon.svg" alt="Petia" className="w-6 h-6 object-contain" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-st-arctic flex items-center gap-2">
+                  Petia
+                  <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-st-electric/15 text-st-electric border border-st-electric/30">
+                    {APP_VERSION}
+                  </span>
+                </h3>
+                <p className="text-xs text-st-muted">Gestão Veterinária & Pet Shop</p>
+              </div>
+            </div>
+
+            <SolidaTechBadge variant="sidebar" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="space-y-2">
+              <div className="text-st-muted flex items-start gap-2">
+                <Building2 className="w-3.5 h-3.5 text-st-electric flex-shrink-0 mt-0.5" />
+                <div>
+                  Desenvolvido por: <strong className="text-st-arctic font-medium block sm:inline">SólidaTech Soluções Digitais</strong>
+                </div>
+              </div>
+              <div className="text-st-muted flex items-start gap-2">
+                <Globe className="w-3.5 h-3.5 text-st-electric flex-shrink-0 mt-0.5" />
+                <div className="flex flex-wrap items-center gap-1">
+                  <span>Website:</span>
+                  <a href="https://solidatech.com.br" target="_blank" rel="noopener noreferrer" className="text-st-electric hover:underline font-mono font-semibold break-all">
+                    solidatech.com.br
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-st-muted flex items-start gap-2">
+                <LifeBuoy className="w-3.5 h-3.5 text-st-electric flex-shrink-0 mt-0.5" />
+                <div className="flex flex-wrap items-center gap-1 min-w-0">
+                  <span>Suporte:</span>
+                  <a href="mailto:suporte@solidatech.com.br" className="text-st-electric hover:underline font-mono font-semibold break-all">
+                    suporte@solidatech.com.br
+                  </a>
+                </div>
+              </div>
+              <div className="text-st-muted flex items-start gap-2">
+                <Info className="w-3.5 h-3.5 text-st-electric flex-shrink-0 mt-0.5" />
+                <div>
+                  Versão: <strong className="text-st-arctic font-mono">{APP_VERSION} (2026)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-st-border/30 text-center">
+            <p className="text-[11px] text-st-muted/80 font-mono">
+              © {new Date().getFullYear()} Petia & SólidaTech. Todos os direitos reservados.
+            </p>
+          </div>
         </div>
       </div>
 

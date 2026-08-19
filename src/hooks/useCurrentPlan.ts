@@ -19,6 +19,13 @@ export interface CurrentPlan {
 
 const DEFAULT_TRIAL_DAYS = 7;
 
+function getDaysRemaining(endDateStr: string | null): number {
+  if (!endDateStr) return 0;
+  const now = new Date();
+  const endDate = new Date(endDateStr);
+  return Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+}
+
 function getTrialInfo() {
   if (typeof window === 'undefined') {
     return { isTrial: true, daysRemaining: DEFAULT_TRIAL_DAYS, trialEndsAt: null };
@@ -31,10 +38,8 @@ function getTrialInfo() {
   }
 
   const startDate = new Date(trialStart);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const daysRemaining = Math.max(0, DEFAULT_TRIAL_DAYS - diffDays);
   const endDate = new Date(startDate.getTime() + DEFAULT_TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  const daysRemaining = getDaysRemaining(endDate.toISOString());
 
   return {
     isTrial: daysRemaining > 0,
@@ -46,8 +51,8 @@ function getTrialInfo() {
 const initialTrial = getTrialInfo();
 
 const DEFAULT_PLAN: CurrentPlan = {
-  planType: 'basico',
-  planConfig: PLANS['basico'],
+  planType: 'diamond',
+  planConfig: PLANS['diamond'],
   subscriptionStatus: 'trial',
   trialEndsAt: initialTrial.trialEndsAt,
   trialDaysRemaining: initialTrial.daysRemaining,
@@ -86,18 +91,26 @@ export function useCurrentPlan(): CurrentPlan {
               .maybeSingle();
 
             if (clinicData) {
-              const planType = (clinicData.plan as PlanType) || 'basico';
               const status = clinicData.subscription_status || 'trial';
+              
+              const dbTrialEndsAt = clinicData.trial_ends_at;
+              const actualTrialEndsAt = dbTrialEndsAt || trialInfo.trialEndsAt;
+              const actualDaysRemaining = dbTrialEndsAt ? getDaysRemaining(dbTrialEndsAt) : trialInfo.daysRemaining;
+              
+              const isTrial = status === 'trial' || (status !== 'active' && actualDaysRemaining > 0);
+              
+              let planType = (clinicData.plan as PlanType) || 'basico';
+              if (isTrial && status !== 'active') {
+                planType = 'diamond';
+              }
               const planConfig = PLANS[planType] || PLANS['basico'];
-
-              const isTrial = status === 'trial' || trialInfo.isTrial;
 
               const result: CurrentPlan = {
                 planType,
                 planConfig,
                 subscriptionStatus: status as CurrentPlan['subscriptionStatus'],
-                trialEndsAt: clinicData.trial_ends_at || trialInfo.trialEndsAt,
-                trialDaysRemaining: trialInfo.daysRemaining,
+                trialEndsAt: actualTrialEndsAt,
+                trialDaysRemaining: actualDaysRemaining,
                 isLoading: false,
                 isTrial,
                 isActive: status === 'active',
@@ -105,7 +118,11 @@ export function useCurrentPlan(): CurrentPlan {
                 isCanceled: status === 'canceled',
               };
 
-              localStorage.setItem('petia_current_plan', JSON.stringify({ planType, status }));
+              localStorage.setItem('petia_current_plan', JSON.stringify({ 
+                planType, 
+                status,
+                trialEndsAt: actualTrialEndsAt
+              }));
               setState(result);
               return;
             }
@@ -115,19 +132,30 @@ export function useCurrentPlan(): CurrentPlan {
         // 2. Fallback to localStorage cache
         const cached = localStorage.getItem('petia_current_plan');
         if (cached) {
-          const { planType, status } = JSON.parse(cached) as {
+          const parsed = JSON.parse(cached) as {
             planType: PlanType;
             status: string;
+            trialEndsAt?: string;
           };
+          
+          const actualTrialEndsAt = parsed.trialEndsAt || trialInfo.trialEndsAt;
+          const actualDaysRemaining = parsed.trialEndsAt ? getDaysRemaining(parsed.trialEndsAt) : trialInfo.daysRemaining;
+          const status = parsed.status || 'trial';
+          const isTrial = status === 'trial' || (status !== 'active' && actualDaysRemaining > 0);
+          
+          let planType = parsed.planType || 'basico';
+          if (isTrial && status !== 'active') {
+            planType = 'diamond';
+          }
+          
           const planConfig = PLANS[planType] || PLANS['basico'];
-          const isTrial = status === 'trial' || trialInfo.isTrial;
 
           setState({
             planType,
             planConfig,
             subscriptionStatus: (status as CurrentPlan['subscriptionStatus']) || 'trial',
-            trialEndsAt: trialInfo.trialEndsAt,
-            trialDaysRemaining: trialInfo.daysRemaining,
+            trialEndsAt: actualTrialEndsAt,
+            trialDaysRemaining: actualDaysRemaining,
             isLoading: false,
             isTrial,
             isActive: status === 'active',
@@ -142,8 +170,8 @@ export function useCurrentPlan(): CurrentPlan {
 
       // Default: 7-day trial active
       setState({
-        planType: 'basico',
-        planConfig: PLANS['basico'],
+        planType: 'diamond',
+        planConfig: PLANS['diamond'],
         subscriptionStatus: 'trial',
         trialEndsAt: trialInfo.trialEndsAt,
         trialDaysRemaining: trialInfo.daysRemaining,

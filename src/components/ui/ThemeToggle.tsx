@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 export type ThemeMode = 'dark' | 'light' | 'system';
 
 export function ThemeToggle() {
-  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
 
   function applyTheme(mode: ThemeMode) {
     if (mode === 'light') {
@@ -25,14 +25,14 @@ export function ThemeToggle() {
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem('kmzero_theme_mode') as ThemeMode | null;
-    const initial = saved || 'dark';
+    const saved = localStorage.getItem('petia_theme') as ThemeMode | null;
+    const initial = saved || 'system';
     setThemeMode(initial);
     applyTheme(initial);
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
     const handleChange = () => {
-      const current = (localStorage.getItem('kmzero_theme_mode') as ThemeMode) || 'dark';
+      const current = (localStorage.getItem('petia_theme') as ThemeMode) || 'system';
       if (current === 'system') {
         applyTheme('system');
       }
@@ -44,7 +44,7 @@ export function ThemeToggle() {
 
   function selectMode(mode: ThemeMode) {
     setThemeMode(mode);
-    localStorage.setItem('kmzero_theme_mode', mode);
+    localStorage.setItem('petia_theme', mode);
     applyTheme(mode);
   }
 
